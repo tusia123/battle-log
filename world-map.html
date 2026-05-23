@@ -1,0 +1,1017 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+<title>🗺️ 刚子的世界探索图</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+  :root {
+    --bg-dark: #0a0a1a;
+    --bg-card: #141428;
+    --bg-panel: #1a1a35;
+    --accent-gold: #f0c040;
+    --accent-blue: #4a90d9;
+    --accent-purple: #8b5cf6;
+    --accent-green: #34d399;
+    --accent-cyan: #22d3ee;
+    --text-primary: #e8e8f0;
+    --text-secondary: #8888aa;
+    --text-dim: #555570;
+    --border: #2a2a4a;
+    --fog-color: rgba(10, 10, 26, 0.85);
+    --glow-gold: rgba(240, 192, 64, 0.6);
+    --glow-blue: rgba(74, 144, 217, 0.4);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow: hidden;
+    touch-action: none;
+  }
+
+  /* ===== 顶部状态栏 ===== */
+  .header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: linear-gradient(180deg, rgba(10,10,26,0.95) 0%, rgba(10,10,26,0.8) 100%);
+    backdrop-filter: blur(10px);
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .header-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .header-title h1 {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent-gold);
+  }
+
+  .header-title .stats {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+
+  .progress-bar {
+    width: 100%;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 8px;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-gold), var(--accent-cyan));
+    border-radius: 2px;
+    transition: width 0.8s ease;
+  }
+
+  .continent-progress {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+
+  .continent-progress::-webkit-scrollbar { display: none; }
+
+  .continent-chip {
+    flex-shrink: 0;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    white-space: nowrap;
+  }
+
+  .continent-chip.active {
+    border-color: var(--accent-gold);
+    color: var(--accent-gold);
+  }
+
+  /* ===== 地图容器 ===== */
+  .map-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .map-wrapper {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    transform-origin: center center;
+    transition: transform 0.1s ease-out;
+  }
+
+  /* ===== SVG 世界地图 ===== */
+  .world-map {
+    width: 100%;
+    height: 100%;
+  }
+
+  .world-map .land {
+    fill: #1a2040;
+    stroke: #2a3060;
+    stroke-width: 0.3;
+  }
+
+  .world-map .water {
+    fill: var(--bg-dark);
+  }
+
+  /* ===== 迷雾层 ===== */
+  .fog-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: var(--fog-color);
+    transition: opacity 0.5s;
+  }
+
+  .fog-clear {
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, transparent 0%, transparent 60%, var(--fog-color) 100%);
+    pointer-events: none;
+    animation: fogPulse 4s ease-in-out infinite;
+  }
+
+  @keyframes fogPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.9; }
+  }
+
+  /* ===== 地点光点 ===== */
+  .spot {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    z-index: 100;
+  }
+
+  .spot.locked {
+    display: none;
+  }
+
+  .spot .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--accent-gold);
+    box-shadow: 0 0 8px var(--glow-gold), 0 0 16px var(--glow-gold);
+    animation: dotPulse 2s ease-in-out infinite;
+    margin: 2px;
+  }
+
+  .spot.legendary .dot {
+    width: 10px;
+    height: 10px;
+    background: var(--accent-gold);
+    box-shadow: 0 0 12px var(--glow-gold), 0 0 24px var(--glow-gold);
+    margin: 1px;
+  }
+
+  .spot.rare .dot {
+    background: var(--accent-cyan);
+    box-shadow: 0 0 8px var(--accent-cyan), 0 0 16px rgba(34,211,238,0.3);
+  }
+
+  .spot.common .dot {
+    background: var(--accent-green);
+    box-shadow: 0 0 6px var(--accent-green), 0 0 12px rgba(52,211,153,0.3);
+  }
+
+  @keyframes dotPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.3); opacity: 0.8; }
+  }
+
+  /* ===== 路线连线 ===== */
+  .route-line {
+    position: absolute;
+    pointer-events: none;
+    z-index: 50;
+  }
+
+  .route-line svg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+
+  .route-line .line-path {
+    fill: none;
+    stroke: var(--text-dim);
+    stroke-width: 1;
+    stroke-dasharray: 4 4;
+    opacity: 0.5;
+  }
+
+  .route-line .line-path.active {
+    stroke: var(--accent-gold);
+    stroke-width: 1.5;
+    stroke-dasharray: none;
+    opacity: 0.8;
+    filter: drop-shadow(0 0 3px var(--glow-gold));
+    animation: lineGlow 3s ease-in-out infinite;
+  }
+
+  @keyframes lineGlow {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+  }
+
+  /* ===== 详情弹窗 ===== */
+  .card-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    z-index: 2000;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+    backdrop-filter: blur(5px);
+  }
+
+  .card-overlay.show {
+    display: flex;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .explore-card {
+    width: 100%;
+    max-width: 420px;
+    max-height: 85vh;
+    background: var(--bg-card);
+    border-radius: 20px 20px 0 0;
+    overflow-y: auto;
+    animation: slideUp 0.4s ease;
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+
+  .card-image {
+    width: 100%;
+    aspect-ratio: 3/4;
+    background: linear-gradient(135deg, #1a2040, #2a1a4e);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .card-image .quality-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(4px);
+  }
+
+  .card-image .quality-badge.legendary { color: var(--accent-gold); border: 1px solid var(--accent-gold); }
+  .card-image .quality-badge.rare { color: var(--accent-cyan); border: 1px solid var(--accent-cyan); }
+  .card-image .quality-badge.common { color: var(--accent-green); border: 1px solid var(--accent-green); }
+
+  .card-content {
+    padding: 20px;
+  }
+
+  .card-header {
+    margin-bottom: 16px;
+  }
+
+  .card-header h2 {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .card-header .meta {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: flex;
+    gap: 12px;
+  }
+
+  .card-section {
+    margin-bottom: 16px;
+    padding: 12px;
+    background: var(--bg-panel);
+    border-radius: 12px;
+    border-left: 3px solid var(--accent-blue);
+  }
+
+  .card-section.season { border-left-color: var(--accent-green); }
+  .card-section.knowledge { border-left-color: var(--accent-blue); }
+  .card-section.causal { border-left-color: var(--accent-purple); }
+  .card-section.interaction { border-left-color: var(--accent-gold); }
+
+  .card-section .label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+
+  .card-section .content {
+    font-size: 14px;
+    line-height: 1.7;
+    color: var(--text-primary);
+  }
+
+  .causal-chain {
+    font-size: 13px;
+    line-height: 1.8;
+  }
+
+  .causal-chain .arrow {
+    color: var(--accent-purple);
+    font-weight: 700;
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-dim);
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.6);
+    border: none;
+    color: white;
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+    z-index: 10;
+  }
+
+  /* ===== 底部路线信息栏 ===== */
+  .route-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: linear-gradient(0deg, rgba(10,10,26,0.95) 0%, rgba(10,10,26,0.8) 100%);
+    backdrop-filter: blur(10px);
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+  }
+
+  .route-info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+
+  .route-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent-gold);
+  }
+
+  .route-week {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .route-stops {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .route-stop-dot {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    border: 2px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--text-dim);
+    transition: all 0.3s;
+  }
+
+  .route-stop-dot.unlocked {
+    border-color: var(--accent-gold);
+    background: rgba(240,192,64,0.1);
+    color: var(--accent-gold);
+  }
+
+  .route-stop-dot.current {
+    border-color: var(--accent-cyan);
+    background: rgba(34,211,238,0.1);
+    color: var(--accent-cyan);
+    animation: dotPulse 2s infinite;
+  }
+
+  .route-stop-connector {
+    width: 12px;
+    height: 2px;
+    background: var(--border);
+    border-radius: 1px;
+  }
+
+  .route-stop-connector.active {
+    background: var(--accent-gold);
+    box-shadow: 0 0 4px var(--glow-gold);
+  }
+
+  /* ===== 缩放控制 ===== */
+  .zoom-controls {
+    position: fixed;
+    right: 16px;
+    bottom: 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 900;
+  }
+
+  .zoom-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    color: var(--text-primary);
+    font-size: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+
+  .zoom-btn:active {
+    background: var(--accent-gold);
+    color: var(--bg-dark);
+  }
+
+  /* ===== 空状态 ===== */
+  .empty-state {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    z-index: 500;
+    pointer-events: none;
+  }
+
+  .empty-state .emoji {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+
+  .empty-state .text {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+
+  /* ===== 响应式 ===== */
+  @media (min-width: 768px) {
+    .explore-card {
+      max-height: 90vh;
+      border-radius: 20px;
+      margin-bottom: 20px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- 顶部状态栏 -->
+<div class="header">
+  <div class="header-title">
+    <h1>🗺️ 刚子的世界探索图</h1>
+    <span class="stats" id="totalStats">0 / 260</span>
+  </div>
+  <div class="progress-bar">
+    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+  </div>
+  <div class="continent-progress" id="continentProgress"></div>
+</div>
+
+<!-- 地图容器 -->
+<div class="map-container" id="mapContainer">
+  <div class="map-wrapper" id="mapWrapper">
+    <!-- SVG世界地图将在此渲染 -->
+    <svg class="world-map" id="worldMap" viewBox="-180 -90 360 180" preserveAspectRatio="xMidYMid meet">
+      <!-- 水域背景 -->
+      <rect class="water" x="-180" y="-90" width="360" height="180"/>
+      <!-- 简化版大陆轮廓 - 使用简化多边形 -->
+      <g class="continents" id="continentsGroup">
+        <!-- 北美洲 -->
+        <path class="land" d="M-165,15 L-165,65 L-130,70 L-100,65 L-80,55 L-75,45 L-60,50 L-55,30 L-75,25 L-85,30 L-100,25 L-120,30 L-140,25 L-155,20 Z"/>
+        <!-- 南美洲 -->
+        <path class="land" d="M-80,10 L-75,-5 L-65,-10 L-55,-20 L-50,-35 L-55,-50 L-60,-55 L-70,-50 L-75,-40 L-80,-20 L-80,-5 L-82,5 Z"/>
+        <!-- 欧洲 -->
+        <path class="land" d="M-10,35 L0,40 L5,50 L10,55 L15,60 L25,65 L35,70 L40,65 L35,55 L30,50 L25,45 L20,40 L10,38 L0,36 L-5,38 Z"/>
+        <!-- 非洲 -->
+        <path class="land" d="M-20,30 L-5,30 L5,25 L15,30 L25,30 L35,25 L40,20 L45,10 L45,0 L40,-10 L35,-20 L30,-30 L20,-35 L10,-30 L5,-20 L0,-10 L-5,0 L-10,10 L-15,20 L-18,28 Z"/>
+        <!-- 亚洲 -->
+        <path class="land" d="M25,30 L35,35 L45,40 L55,45 L65,50 L80,60 L100,65 L120,60 L135,55 L145,50 L150,45 L155,40 L150,30 L140,25 L130,20 L120,15 L110,10 L100,5 L90,10 L80,15 L70,20 L60,25 L50,30 L40,30 L30,28 Z"/>
+        <!-- 东南亚/印尼 -->
+        <path class="land" d="M95,5 L100,0 L110,0 L120,5 L130,0 L140,5 L145,0 L140,-5 L130,-8 L120,-5 L110,-2 L100,-5 L95,0 Z"/>
+        <!-- 大洋洲 -->
+        <path class="land" d="M115,-20 L125,-18 L135,-20 L145,-25 L150,-30 L150,-38 L145,-40 L135,-38 L125,-35 L118,-30 L115,-25 Z"/>
+        <!-- 格陵兰 -->
+        <path class="land" d="M-55,60 L-45,65 L-35,72 L-25,75 L-20,72 L-25,65 L-35,60 L-45,58 L-52,58 Z"/>
+      </g>
+    </svg>
+
+    <!-- 迷雾层 -->
+    <div class="fog-layer" id="fogLayer"></div>
+
+    <!-- 地点光点容器 -->
+    <div id="spotsContainer"></div>
+
+    <!-- 路线连线容器 -->
+    <div id="routeLinesContainer"></div>
+  </div>
+</div>
+
+<!-- 空状态提示 -->
+<div class="empty-state" id="emptyState">
+  <div class="emoji">🌍</div>
+  <div class="text">
+    迷雾覆盖着整个世界<br>
+    完成每日目标，点亮你的第一个光点
+  </div>
+</div>
+
+<!-- 缩放控制 -->
+<div class="zoom-controls">
+  <button class="zoom-btn" onclick="zoomIn()">+</button>
+  <button class="zoom-btn" onclick="zoomOut()">−</button>
+  <button class="zoom-btn" onclick="resetView()" style="font-size:12px">⟲</button>
+</div>
+
+<!-- 底部路线信息栏 -->
+<div class="route-bar" id="routeBar">
+  <div class="route-info">
+    <span class="route-name" id="routeName">加载中...</span>
+    <span class="route-week" id="routeWeek"></span>
+  </div>
+  <div class="route-stops" id="routeStops"></div>
+</div>
+
+<!-- 详情弹窗 -->
+<div class="card-overlay" id="cardOverlay" onclick="closeCard(event)">
+  <div class="explore-card" id="exploreCard" onclick="event.stopPropagation()">
+    <div class="card-image" id="cardImage">
+      <button class="close-btn" onclick="closeCard()">✕</button>
+      <span class="quality-badge" id="qualityBadge"></span>
+    </div>
+    <div class="card-content">
+      <div class="card-header">
+        <h2 id="cardTitle"></h2>
+        <div class="meta">
+          <span id="cardCoords"></span>
+          <span id="cardDate"></span>
+          <span id="cardRoute"></span>
+        </div>
+      </div>
+      <div class="card-section season">
+        <div class="label">🌡️ 时令关联</div>
+        <div class="content" id="cardSeason"></div>
+      </div>
+      <div class="card-section knowledge">
+        <div class="label">📖 知识</div>
+        <div class="content" id="cardKnowledge"></div>
+      </div>
+      <div class="card-section causal">
+        <div class="label">🔍 因果链</div>
+        <div class="content causal-chain" id="cardCausal"></div>
+      </div>
+      <div class="card-section interaction">
+        <div class="label">💬 互动</div>
+        <div class="content" id="cardInteraction"></div>
+      </div>
+      <div class="card-footer">
+        <span id="cardSeries"></span>
+        <span id="cardCompletion"></span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== 全局状态 =====
+let mapData = null;
+let currentZoom = 1;
+let panX = 0, panY = 0;
+let isDragging = false;
+let lastX, lastY;
+let pinchStartDist = 0;
+
+// ===== 初始化 =====
+// 数据源优先级：1) 本地同目录 2) COS data 子目录 3) 内置演示数据
+const DATA_URLS = [
+  'data/world-map-data.json',
+  'world-map-data.json',
+  'https://daily-quest-rpg-leo2026-1360024105.cos.ap-guangzhou.myqcloud.com/data/world-map-data.json'
+];
+
+async function init() {
+  let loaded = false;
+  for (const url of DATA_URLS) {
+    try {
+      const response = await fetch(url);
+      if (response.ok) {
+        mapData = await response.json();
+        loaded = true;
+        break;
+      }
+    } catch (e) { /* 尝试下一个 */ }
+  }
+  try {
+    if (!loaded) throw new Error('all data sources failed');
+    renderMap();
+    renderHeader();
+    renderRouteBar();
+    setupTouchControls();
+    checkEmptyState();
+  } catch (e) {
+    // 如果加载失败，使用演示数据
+    mapData = getDemoData();
+    renderMap();
+    renderHeader();
+    renderRouteBar();
+    setupTouchControls();
+    checkEmptyState();
+  }
+}
+
+// ===== 演示数据 =====
+function getDemoData() {
+  return {
+    meta: { total_spots: 260 },
+    stats: {
+      total_unlocked: 3,
+      routes_completed: 0,
+      continents: {
+        asia: { total: 65, unlocked: 1 },
+        europe: { total: 55, unlocked: 2 },
+        africa: { total: 40, unlocked: 0 },
+        north_america: { total: 30, unlocked: 0 },
+        south_america: { total: 25, unlocked: 0 },
+        oceania: { total: 15, unlocked: 0 },
+        antarctica: { total: 10, unlocked: 0 }
+      }
+    },
+    routes: [
+      {
+        week: "W17",
+        month: 5,
+        name: "丝绸之路·东段",
+        theme: "丝路与高原",
+        season_reason: "5月的河西走廊春暖花开，敦煌沙丘在夕阳下金光万丈",
+        completed: false,
+        stops: [
+          { day: 1, name: "大雁塔", full_name: "中国·西安大雁塔", country: "中国", continent: "asia", lat: 34.22, lng: 108.96, quality_pool: "rare", unlocked: true, unlock_date: "2026-05-19", completion_rate: 0.85, image_url: null, season_text: "5月的西安，石榴花开满城墙根，气温刚好25°C，是一年中最宜人的季节。", knowledge: "大雁塔建于652年，是玄奘从印度带回的经书和佛像的存放地。塔高64米，七层方形砖塔，是中国现存最早的楼阁式砖塔。", causal: "为什么叫\"大雁塔\"？→ 玄奘在印度曾见大雁舍身饲僧的故事 → 回国后以此典故命名 → 象征佛教慈悲精神 → 后成为唐代科举进士题名之地（\"雁塔题名\"） → 至今保存有珍贵的唐代进士题名碑", interaction: "如果你能带一件东西穿越回唐朝长安，你会带什么？" },
+          { day: 2, name: "莫高窟", full_name: "中国·敦煌莫高窟", country: "中国", continent: "asia", lat: 40.04, lng: 94.81, quality_pool: "legendary", unlocked: true, unlock_date: "2026-05-20", completion_rate: 0.92, image_url: null, season_text: "5月的敦煌日落推迟到8点半，鸣沙山在夕阳下变成流动的金色海洋。", knowledge: "莫高窟开凿于366年，历经千年营造，现存735个洞窟、2415尊彩塑、45000平方米壁画。它是世界上规模最大、内容最丰富的佛教艺术圣地。", causal: "为什么是敦煌？→ 丝绸之路在此分为南北两道 → 商旅在此集散休整 → 佛教沿丝路东传至此 → 来往商人和僧侣捐资开窟祈福 → 加上敦煌砂砾岩质地适合雕凿 → 历经十个朝代持续营造 → 形成人类最大的佛教艺术宝库", interaction: "45000平方米壁画相当于8个足球场。如果你只能看一个洞窟，你希望看哪个朝代的？" },
+          { day: 3, name: "鸣沙山月牙泉", full_name: "中国·敦煌鸣沙山月牙泉", country: "中国", continent: "asia", lat: 40.08, lng: 94.67, quality_pool: "legendary", unlocked: true, unlock_date: "2026-05-21", completion_rate: 0.95, image_url: null, season_text: "5月的月牙泉水量充沛，泉边的芦苇刚抽出新绿，和金色沙丘形成绝美对比。", knowledge: "月牙泉在沙漠中已存在2000年不枯竭。泉水面积仅0.44公顷，最深处约5米，因形似弯月得名。", causal: "为什么沙漠中有泉水且千年不干？→ 地下有第四纪砾石含水层持续补给 → 泉水来自祁连山冰雪融水的地下径流 → 鸣沙山环形结构形成'风洞效应' → 风到此处回旋上升 → 把落入泉中的沙粒重新吹回沙山顶部 → 泉不被沙埋，沙不侵泉", interaction: "鸣沙山的沙子会\"唱歌\"——特定湿度下滑动时发出50-100Hz低频共振。你想去听听吗？" },
+          { day: 4, name: "嘉峪关", full_name: "中国·嘉峪关", country: "中国", continent: "asia", lat: 39.77, lng: 98.23, quality_pool: "rare", unlocked: false, unlock_date: null, completion_rate: null, image_url: null },
+          { day: 5, name: "张掖丹霞", full_name: "中国·张掖丹霞", country: "中国", continent: "asia", lat: 38.93, lng: 100.06, quality_pool: "legendary", unlocked: false, unlock_date: null, completion_rate: null, image_url: null }
+        ]
+      }
+    ]
+  };
+}
+
+// ===== 渲染地图上的光点 =====
+function renderMap() {
+  const container = document.getElementById('spotsContainer');
+  const fogLayer = document.getElementById('fogLayer');
+  container.innerHTML = '';
+  
+  let fogClears = '';
+
+  mapData.routes.forEach(route => {
+    route.stops.forEach(stop => {
+      if (stop.unlocked) {
+        // 将经纬度转换为屏幕百分比位置
+        const x = ((stop.lng + 180) / 360) * 100;
+        const y = ((90 - stop.lat) / 180) * 100;
+
+        // 创建光点
+        const spot = document.createElement('div');
+        spot.className = `spot ${stop.quality_pool} unlocked-visible`;
+        spot.style.left = x + '%';
+        spot.style.top = y + '%';
+        spot.innerHTML = '<div class="dot"></div>';
+        spot.onclick = () => openCard(stop, route);
+        container.appendChild(spot);
+
+        // 创建迷雾清除区域
+        fogClears += `<div class="fog-clear" style="left:${x - 3}%;top:${y - 3}%;width:6%;height:6%;"></div>`;
+      }
+    });
+  });
+
+  fogLayer.innerHTML = fogClears;
+  renderRouteLines();
+}
+
+// ===== 渲染路线连线 =====
+function renderRouteLines() {
+  const container = document.getElementById('routeLinesContainer');
+  container.innerHTML = '';
+
+  mapData.routes.forEach(route => {
+    const unlockedStops = route.stops.filter(s => s.unlocked);
+    if (unlockedStops.length < 2) return;
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.style.position = 'absolute';
+    svg.style.top = '0';
+    svg.style.left = '0';
+    svg.style.width = '100%';
+    svg.style.height = '100%';
+    svg.style.pointerEvents = 'none';
+    svg.style.zIndex = '50';
+    svg.setAttribute('viewBox', '0 0 100 100');
+    svg.setAttribute('preserveAspectRatio', 'none');
+
+    for (let i = 0; i < unlockedStops.length - 1; i++) {
+      const s1 = unlockedStops[i];
+      const s2 = unlockedStops[i + 1];
+      const x1 = ((s1.lng + 180) / 360) * 100;
+      const y1 = ((90 - s1.lat) / 180) * 100;
+      const x2 = ((s2.lng + 180) / 360) * 100;
+      const y2 = ((90 - s2.lat) / 180) * 100;
+
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', x1);
+      line.setAttribute('y1', y1);
+      line.setAttribute('x2', x2);
+      line.setAttribute('y2', y2);
+      line.setAttribute('class', 'line-path active');
+      svg.appendChild(line);
+    }
+
+    container.appendChild(svg);
+  });
+}
+
+// ===== 渲染顶部状态 =====
+function renderHeader() {
+  const stats = mapData.stats;
+  const total = mapData.meta.total_spots;
+  const unlocked = stats.total_unlocked;
+  
+  document.getElementById('totalStats').textContent = `${unlocked} / ${total}`;
+  document.getElementById('progressFill').style.width = `${(unlocked / total) * 100}%`;
+
+  const continentNames = {
+    asia: '亚洲', europe: '欧洲', africa: '非洲',
+    north_america: '北美', south_america: '南美',
+    oceania: '大洋洲', antarctica: '南极'
+  };
+
+  const cp = document.getElementById('continentProgress');
+  cp.innerHTML = Object.entries(stats.continents).map(([key, val]) => {
+    const pct = val.total > 0 ? Math.round((val.unlocked / val.total) * 100) : 0;
+    const active = val.unlocked > 0 ? 'active' : '';
+    return `<span class="continent-chip ${active}">${continentNames[key]} ${pct}%</span>`;
+  }).join('');
+}
+
+// ===== 渲染底部路线栏 =====
+function renderRouteBar() {
+  if (!mapData.routes || mapData.routes.length === 0) return;
+  
+  const currentRoute = mapData.routes[mapData.routes.length - 1]; // 最近一条路线
+  document.getElementById('routeName').textContent = currentRoute.name;
+  document.getElementById('routeWeek').textContent = currentRoute.week;
+
+  const stopsContainer = document.getElementById('routeStops');
+  stopsContainer.innerHTML = currentRoute.stops.map((stop, i) => {
+    const status = stop.unlocked ? 'unlocked' : (i === currentRoute.stops.filter(s => s.unlocked).length ? 'current' : '');
+    const connector = i < currentRoute.stops.length - 1 ? 
+      `<div class="route-stop-connector ${stop.unlocked && currentRoute.stops[i+1]?.unlocked ? 'active' : ''}"></div>` : '';
+    return `<div class="route-stop-dot ${status}">${i + 1}</div>${connector}`;
+  }).join('');
+}
+
+// ===== 打开卡片详情 =====
+function openCard(stop, route) {
+  const overlay = document.getElementById('cardOverlay');
+  
+  document.getElementById('cardTitle').textContent = stop.full_name;
+  document.getElementById('cardCoords').textContent = `${stop.lat.toFixed(1)}°${stop.lat>0?'N':'S'} ${Math.abs(stop.lng).toFixed(1)}°${stop.lng>0?'E':'W'}`;
+  document.getElementById('cardDate').textContent = stop.unlock_date || '';
+  document.getElementById('cardRoute').textContent = `${route.name}·第${stop.day}站`;
+
+  const badge = document.getElementById('qualityBadge');
+  badge.className = `quality-badge ${stop.quality_pool}`;
+  badge.textContent = stop.quality_pool === 'legendary' ? '⭐⭐⭐ 传奇' : 
+                       stop.quality_pool === 'rare' ? '⭐⭐ 稀有' : '⭐ 探索';
+
+  document.getElementById('cardSeason').textContent = stop.season_text || route.season_reason;
+  document.getElementById('cardKnowledge').textContent = stop.knowledge || '知识内容将在解锁时生成...';
+  document.getElementById('cardCausal').innerHTML = (stop.causal || '因果链将在解锁时生成...').replace(/→/g, '<span class="arrow"> → </span>');
+  document.getElementById('cardInteraction').textContent = stop.interaction || '互动话题将在解锁时生成...';
+  document.getElementById('cardSeries').textContent = `🏷️ ${route.theme} · ${route.week}`;
+  document.getElementById('cardCompletion').textContent = stop.completion_rate ? `完成率 ${Math.round(stop.completion_rate * 100)}%` : '';
+
+  // 图片
+  const cardImage = document.getElementById('cardImage');
+  if (stop.image_url) {
+    cardImage.innerHTML = `<button class="close-btn" onclick="closeCard()">✕</button><span class="quality-badge ${stop.quality_pool}">${badge.textContent}</span><img src="${stop.image_url}" alt="${stop.full_name}">`;
+  } else {
+    cardImage.innerHTML = `<button class="close-btn" onclick="closeCard()">✕</button><span class="quality-badge ${stop.quality_pool}">${badge.textContent}</span><div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:64px;">🌏</div>`;
+  }
+
+  overlay.classList.add('show');
+}
+
+function closeCard(event) {
+  if (event && event.target !== event.currentTarget) return;
+  document.getElementById('cardOverlay').classList.remove('show');
+}
+
+// ===== 检查空状态 =====
+function checkEmptyState() {
+  const unlocked = mapData.stats.total_unlocked;
+  document.getElementById('emptyState').style.display = unlocked > 0 ? 'none' : 'block';
+}
+
+// ===== 缩放和平移控制 =====
+function zoomIn() {
+  currentZoom = Math.min(currentZoom * 1.3, 5);
+  applyTransform();
+}
+
+function zoomOut() {
+  currentZoom = Math.max(currentZoom / 1.3, 0.5);
+  applyTransform();
+}
+
+function resetView() {
+  currentZoom = 1;
+  panX = 0;
+  panY = 0;
+  applyTransform();
+}
+
+function applyTransform() {
+  const wrapper = document.getElementById('mapWrapper');
+  wrapper.style.transform = `translate(${panX}px, ${panY}px) scale(${currentZoom})`;
+}
+
+// ===== 触摸/鼠标控制 =====
+function setupTouchControls() {
+  const container = document.getElementById('mapContainer');
+  
+  // 鼠标拖拽
+  container.addEventListener('mousedown', (e) => {
+    if (e.target.closest('.spot')) return;
+    isDragging = true;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    container.style.cursor = 'grabbing';
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return;
+    panX += e.clientX - lastX;
+    panY += e.clientY - lastY;
+    lastX = e.clientX;
+    lastY = e.clientY;
+    applyTransform();
+  });
+
+  document.addEventListener('mouseup', () => {
+    isDragging = false;
+    container.style.cursor = 'grab';
+  });
+
+  // 滚轮缩放
+  container.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    if (e.deltaY < 0) zoomIn();
+    else zoomOut();
+  }, { passive: false });
+
+  // 触摸事件
+  let touches = [];
+  
+  container.addEventListener('touchstart', (e) => {
+    if (e.target.closest('.spot')) return;
+    touches = Array.from(e.touches);
+    if (touches.length === 1) {
+      isDragging = true;
+      lastX = touches[0].clientX;
+      lastY = touches[0].clientY;
+    } else if (touches.length === 2) {
+      isDragging = false;
+      pinchStartDist = getTouchDist(touches);
+    }
+  });
+
+  container.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    const currentTouches = Array.from(e.touches);
+    
+    if (currentTouches.length === 1 && isDragging) {
+      panX += currentTouches[0].clientX - lastX;
+      panY += currentTouches[0].clientY - lastY;
+      lastX = currentTouches[0].clientX;
+      lastY = currentTouches[0].clientY;
+      applyTransform();
+    } else if (currentTouches.length === 2) {
+      const dist = getTouchDist(currentTouches);
+      const scale = dist / pinchStartDist;
+      currentZoom = Math.min(Math.max(currentZoom * scale, 0.5), 5);
+      pinchStartDist = dist;
+      applyTransform();
+    }
+  }, { passive: false });
+
+  container.addEventListener('touchend', () => {
+    isDragging = false;
+  });
+}
+
+function getTouchDist(touches) {
+  const dx = touches[0].clientX - touches[1].clientX;
+  const dy = touches[0].clientY - touches[1].clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+// ===== 启动 =====
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

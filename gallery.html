@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>刚子的战斗日志 - 明信片画廊</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+  :root {
+    --bg-dark: #0a0a1a;
+    --bg-card: #141428;
+    --accent-gold: #f0c040;
+    --accent-blue: #4a90d9;
+    --accent-purple: #8b5cf6;
+    --accent-green: #34d399;
+    --accent-red: #ef4444;
+    --text-primary: #e8e8f0;
+    --text-secondary: #8888aa;
+    --text-dim: #555570;
+    --border: #2a2a4a;
+    --glow-gold: rgba(240, 192, 64, 0.3);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ===== 顶部状态栏 ===== */
+  .status-bar {
+    background: linear-gradient(135deg, #1a1a3e, #2a1a4e);
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+  }
+
+  .status-bar h1 {
+    font-size: 18px;
+    color: var(--accent-gold);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .stats-row {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .stat-badge {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stat-badge .icon { font-size: 16px; }
+  .stat-badge .value { color: var(--accent-gold); font-weight: 700; }
+
+  /* ===== 导航标签 ===== */
+  .nav-tabs {
+    display: flex;
+    gap: 0;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 72px;
+    z-index: 99;
+  }
+
+  .nav-tab {
+    flex: 1;
+    text-align: center;
+    padding: 12px 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s;
+  }
+
+  .nav-tab.active {
+    color: var(--accent-gold);
+    border-bottom-color: var(--accent-gold);
+  }
+
+  .nav-tab:hover { color: var(--text-primary); }
+
+  /* ===== 明信片画廊 ===== */
+  .section { padding: 20px; display: none; }
+  .section.active { display: block; }
+
+  .week-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin: 16px 0 12px;
+    padding-left: 4px;
+  }
+
+  .postcard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+  }
+
+  /* ===== 明信片卡片（翻转） ===== */
+  .postcard-wrapper {
+    perspective: 1000px;
+    height: 240px;
+    cursor: pointer;
+  }
+
+  .postcard-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+  }
+
+  .postcard-wrapper.flipped .postcard-inner {
+    transform: rotateY(180deg);
+  }
+
+  .postcard-front, .postcard-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .postcard-front {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .postcard-back {
+    background: linear-gradient(135deg, #1a1a3e, #252550);
+    border: 1px solid var(--border);
+    transform: rotateY(180deg);
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    font-size: 11px;
+    overflow-y: auto;
+  }
+
+  /* 正面 - 图片区域 */
+  .postcard-image {
+    flex: 1;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+  }
+
+  /* 模糊效果（低完成度） */
+  .postcard-image.blur-low {
+    filter: blur(2px) grayscale(30%);
+  }
+
+  .postcard-image.blur-high {
+    filter: blur(4px) grayscale(60%) brightness(0.7);
+  }
+
+  /* 金色光芒效果（前三要事全完成） */
+  .postcard-image.golden::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 30%, rgba(240,192,64,0.25) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  /* 正面 - 底部寄语区 */
+  .postcard-caption {
+    background: white;
+    padding: 10px 12px;
+    min-height: 60px;
+  }
+
+  .postcard-date {
+    font-size: 10px;
+    color: #999;
+    margin-bottom: 4px;
+  }
+
+  .postcard-quote {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 14px;
+    color: #333;
+    line-height: 1.4;
+  }
+
+  .postcard-stats {
+    font-size: 10px;
+    color: #aaa;
+    margin-top: 4px;
+    display: flex;
+    gap: 8px;
+  }
+
+  /* 反面 - 数据详情 */
+  .back-title {
+    font-size: 12px;
+    color: var(--accent-gold);
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+
+  .back-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .back-label { color: var(--text-secondary); }
+  .back-value { color: var(--text-primary); font-weight: 500; }
+  .back-value.good { color: var(--accent-green); }
+  .back-value.warn { color: var(--accent-gold); }
+  .back-value.bad { color: var(--accent-red); }
+
+  .back-coach {
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(240,192,64,0.08);
+    border-radius: 8px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+  }
+
+  /* 未解锁的占位 */
+  .postcard-placeholder {
+    height: 240px;
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-dim);
+    font-size: 12px;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .postcard-placeholder .icon { font-size: 24px; opacity: 0.3; }
+
+  /* ===== 探索图鉴 ===== */
+  .explore-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+  }
+
+  .explore-card {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: var(--bg-card);
+    position: relative;
+  }
+
+  .explore-image {
+    height: 180px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* 动态效果：粒子 */
+  .explore-image.effect-particles::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(1px 1px at 20% 30%, white 50%, transparent 50%),
+                      radial-gradient(1px 1px at 40% 70%, white 50%, transparent 50%),
+                      radial-gradient(1px 1px at 60% 20%, white 50%, transparent 50%),
+                      radial-gradient(1px 1px at 80% 60%, white 50%, transparent 50%),
+                      radial-gradient(1px 1px at 10% 80%, white 50%, transparent 50%);
+    animation: float-particles 8s ease-in-out infinite;
+    opacity: 0.6;
+  }
+
+  @keyframes float-particles {
+    0%, 100% { transform: translateY(0); opacity: 0.6; }
+    50% { transform: translateY(-10px); opacity: 0.3; }
+  }
+
+  /* 动态效果：波光 */
+  .explore-image.effect-shimmer::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 45%, transparent 50%);
+    animation: shimmer 4s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0% { transform: translateX(-100%); }
+    100% { transform: translateX(200%); }
+  }
+
+  /* 动态效果：星星闪烁 */
+  .explore-image.effect-twinkle::before {
+    content: '✦';
+    position: absolute;
+    top: 15%;
+    left: 25%;
+    color: white;
+    font-size: 8px;
+    animation: twinkle 2s ease-in-out infinite;
+  }
+
+  .explore-image.effect-twinkle::after {
+    content: '✦';
+    position: absolute;
+    top: 40%;
+    right: 20%;
+    color: white;
+    font-size: 6px;
+    animation: twinkle 3s ease-in-out infinite 1s;
+  }
+
+  @keyframes twinkle {
+    0%, 100% { opacity: 0.2; transform: scale(0.8); }
+    50% { opacity: 1; transform: scale(1.2); }
+  }
+
+  .explore-info {
+    padding: 12px;
+  }
+
+  .explore-location {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+
+  .explore-series {
+    font-size: 11px;
+    color: var(--accent-purple);
+    margin-bottom: 6px;
+  }
+
+  .explore-trivia {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    font-style: italic;
+  }
+
+  .explore-number {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(0,0,0,0.6);
+    color: var(--accent-gold);
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  /* ===== 英雄面板 ===== */
+  .hero-panel {
+    padding: 20px;
+  }
+
+  .hero-card {
+    background: linear-gradient(135deg, #1a1a3e, #2a1a5e);
+    border: 1px solid var(--accent-purple);
+    border-radius: 16px;
+    padding: 24px;
+    margin-bottom: 16px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(139,92,246,0.1) 0%, transparent 70%);
+  }
+
+  .hero-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent-gold);
+    margin-bottom: 4px;
+  }
+
+  .hero-title {
+    font-size: 14px;
+    color: var(--accent-purple);
+    margin-bottom: 16px;
+  }
+
+  .hero-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+  }
+
+  .hero-stat {
+    text-align: center;
+    padding: 12px;
+    background: rgba(255,255,255,0.03);
+    border-radius: 12px;
+  }
+
+  .hero-stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--accent-gold);
+  }
+
+  .hero-stat-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  /* 成就徽章列表 */
+  .achievement-list {
+    margin-top: 16px;
+  }
+
+  .achievement-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    background: var(--bg-card);
+    border-radius: 12px;
+    margin-bottom: 8px;
+    border: 1px solid var(--border);
+  }
+
+  .achievement-item.unlocked {
+    border-color: var(--accent-gold);
+    background: rgba(240,192,64,0.05);
+  }
+
+  .achievement-item.locked {
+    opacity: 0.4;
+  }
+
+  .achievement-icon { font-size: 28px; }
+
+  .achievement-info { flex: 1; }
+  .achievement-name { font-size: 13px; font-weight: 700; }
+  .achievement-desc { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+  /* ===== 进度条 ===== */
+  .progress-bar-bg {
+    width: 100%;
+    height: 6px;
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-top: 12px;
+  }
+
+  .progress-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    background: linear-gradient(90deg, var(--accent-purple), var(--accent-gold));
+    transition: width 0.8s ease;
+  }
+
+  /* ===== 音频播放器（音乐卡） ===== */
+  .music-player {
+    background: linear-gradient(135deg, #1a2a3e, #1a1a3e);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .music-cover {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    background: var(--accent-purple);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+
+  .music-info { flex: 1; }
+  .music-title { font-size: 13px; font-weight: 500; }
+  .music-artist { font-size: 11px; color: var(--text-secondary); }
+
+  .music-play-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--accent-gold);
+    border: none;
+    color: var(--bg-dark);
+    font-size: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* ===== 响应式 ===== */
+  @media (max-width: 480px) {
+    .postcard-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .explore-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .hero-stats-grid {
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .status-bar { padding: 14px; }
+    .stats-row { gap: 8px; }
+    .stat-badge { padding: 4px 10px; font-size: 12px; }
+  }
+
+  @media (min-width: 768px) {
+    .postcard-grid {
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .explore-grid {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  /* ===== 滚动条 ===== */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<!-- 顶部状态栏 -->
+<div class="status-bar">
+  <h1>🎮 刚子的战斗日志</h1>
+  <div class="stats-row">
+    <div class="stat-badge">
+      <span class="icon">🔥</span>
+      <span>连胜</span>
+      <span class="value" id="streak-days">5</span>
+      <span>天</span>
+    </div>
+    <div class="stat-badge">
+      <span class="icon">📊</span>
+      <span>本周</span>
+      <span class="value" id="week-avg">82%</span>
+    </div>
+    <div class="stat-badge">
+      <span class="icon">📸</span>
+      <span class="value" id="total-postcards">38</span>
+      <span>张</span>
+    </div>
+    <div class="stat-badge">
+      <span class="icon">🌍</span>
+      <span class="value" id="total-explores">12</span>
+      <span>张</span>
+    </div>
+  </div>
+</div>
+
+<!-- 导航标签 -->
+<div class="nav-tabs">
+  <div class="nav-tab active" onclick="switchTab('gallery')">📸 明信片</div>
+  <div class="nav-tab" onclick="switchTab('explore')">🌍 探索</div>
+  <div class="nav-tab" onclick="switchTab('hero')">⚔️ 英雄</div>
+</div>
+
+<!-- 明信片画廊 -->
+<div class="section active" id="section-gallery">
+  <div class="week-label">本周 · 5月19日 - 5月25日</div>
+  <div class="postcard-grid">
+
+    <!-- 示例：高完成度明信片 -->
+    <div class="postcard-wrapper" onclick="this.classList.toggle('flipped')">
+      <div class="postcard-inner">
+        <div class="postcard-front">
+          <div class="postcard-image golden" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=500&fit=crop')"></div>
+          <div class="postcard-caption">
+            <div class="postcard-date">2026.05.19 #Day034</div>
+            <div class="postcard-quote">终于把那个拖了三天的方案搞定了</div>
+            <div class="postcard-stats">
+              <span>⚡92%</span>
+              <span>🎯3/3</span>
+              <span>🔥1</span>
+            </div>
+          </div>
+        </div>
+        <div class="postcard-back">
+          <div class="back-title">📋 战况详情</div>
+          <div class="back-row"><span class="back-label">完成率</span><span class="back-value good">92%</span></div>
+          <div class="back-row"><span class="back-label">前三要事</span><span class="back-value good">3/3 全清</span></div>
+          <div class="back-row"><span class="back-label">总任务</span><span class="back-value">8/9</span></div>
+          <div class="back-row"><span class="back-label">能量值</span><span class="back-value">225</span></div>
+          <div class="back-row"><span class="back-label">被动中断</span><span class="back-value">1次/30min</span></div>
+          <div class="back-coach">💡 教练说：上午效率极高，4项任务全部按时完成。下午只被中断1次，抗干扰能力在提升！</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 示例：中等完成度 -->
+    <div class="postcard-wrapper" onclick="this.classList.toggle('flipped')">
+      <div class="postcard-inner">
+        <div class="postcard-front">
+          <div class="postcard-image" style="background-image: url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=400&h=500&fit=crop')"></div>
+          <div class="postcard-caption">
+            <div class="postcard-date">2026.05.20 #Day035</div>
+            <div class="postcard-quote">今天节奏有点乱，明天调整</div>
+            <div class="postcard-stats">
+              <span>⚡75%</span>
+              <span>🎯2/3</span>
+              <span>🔥2</span>
+            </div>
+          </div>
+        </div>
+        <div class="postcard-back">
+          <div class="back-title">📋 战况详情</div>
+          <div class="back-row"><span class="back-label">完成率</span><span class="back-value warn">75%</span></div>
+          <div class="back-row"><span class="back-label">前三要事</span><span class="back-value warn">2/3</span></div>
+          <div class="back-row"><span class="back-label">总任务</span><span class="back-value">6/8</span></div>
+          <div class="back-row"><span class="back-label">能量值</span><span class="back-value">160</span></div>
+          <div class="back-row"><span class="back-label">被动中断</span><span class="back-value warn">3次/1.5h</span></div>
+          <div class="back-coach">💡 下午14-16点连续被打断3次，建议明天这个时段安排可中断型任务。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 示例：低完成度（模糊） -->
+    <div class="postcard-wrapper" onclick="this.classList.toggle('flipped')">
+      <div class="postcard-inner">
+        <div class="postcard-front">
+          <div class="postcard-image blur-low" style="background-image: url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=500&fit=crop')"></div>
+          <div class="postcard-caption">
+            <div class="postcard-date">2026.05.21 #Day036</div>
+            <div class="postcard-quote">今天太累了，休息也是进步</div>
+            <div class="postcard-stats">
+              <span>⚡55%</span>
+              <span>🎯1/3</span>
+              <span>🔥0</span>
+            </div>
+          </div>
+        </div>
+        <div class="postcard-back">
+          <div class="back-title">📋 战况详情</div>
+          <div class="back-row"><span class="back-label">完成率</span><span class="back-value bad">55%</span></div>
+          <div class="back-row"><span class="back-label">前三要事</span><span class="back-value bad">1/3</span></div>
+          <div class="back-row"><span class="back-label">总任务</span><span class="back-value">4/7</span></div>
+          <div class="back-row"><span class="back-label">能量值</span><span class="back-value">85</span></div>
+          <div class="back-row"><span class="back-label">被动中断</span><span class="back-value bad">5次/3h</span></div>
+          <div class="back-coach">💡 今天被大量临时事务冲击，但你坚持记录了每一次中断。这份诚实本身就值得肯定。明天轻装上阵！</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 示例：又一个高完成度 -->
+    <div class="postcard-wrapper" onclick="this.classList.toggle('flipped')">
+      <div class="postcard-inner">
+        <div class="postcard-front">
+          <div class="postcard-image golden" style="background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=400&h=500&fit=crop')"></div>
+          <div class="postcard-caption">
+            <div class="postcard-date">2026.05.22 #Day037</div>
+            <div class="postcard-quote">触底反弹！今天证明了自己</div>
+            <div class="postcard-stats">
+              <span>⚡88%</span>
+              <span>🎯3/3</span>
+              <span>🔥1</span>
+            </div>
+          </div>
+        </div>
+        <div class="postcard-back">
+          <div class="back-title">📋 战况详情</div>
+          <div class="back-row"><span class="back-label">完成率</span><span class="back-value good">88%</span></div>
+          <div class="back-row"><span class="back-label">前三要事</span><span class="back-value good">3/3 全清</span></div>
+          <div class="back-row"><span class="back-label">总任务</span><span class="back-value">7/8</span></div>
+          <div class="back-row"><span class="back-label">能量值</span><span class="back-value">205</span></div>
+          <div class="back-row"><span class="back-label">被动中断</span><span class="back-value">1次/20min</span></div>
+          <div class="back-coach">💡 效率回血！从昨天55%飙到88%，刚子你证明了自己的恢复力。BOSS全清，漂亮！</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 今天（进行中） -->
+    <div class="postcard-wrapper" onclick="this.classList.toggle('flipped')">
+      <div class="postcard-inner">
+        <div class="postcard-front">
+          <div class="postcard-image" style="background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400&h=500&fit=crop')"></div>
+          <div class="postcard-caption">
+            <div class="postcard-date">2026.05.23 #Day038</div>
+            <div class="postcard-quote">又是充实的一天</div>
+            <div class="postcard-stats">
+              <span>⚡82%</span>
+              <span>🎯3/3</span>
+              <span>🔥2</span>
+            </div>
+          </div>
+        </div>
+        <div class="postcard-back">
+          <div class="back-title">📋 战况详情</div>
+          <div class="back-row"><span class="back-label">完成率</span><span class="back-value good">82%</span></div>
+          <div class="back-row"><span class="back-label">前三要事</span><span class="back-value good">3/3 全清</span></div>
+          <div class="back-row"><span class="back-label">总任务</span><span class="back-value">7/9</span></div>
+          <div class="back-row"><span class="back-label">能量值</span><span class="back-value">195</span></div>
+          <div class="back-row"><span class="back-label">被动中断</span><span class="back-value">2次/50min</span></div>
+          <div class="back-coach">💡 连续两天BOSS全清，稳定输出！SMART一次通过率80%，思维越来越清晰了。</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 未到的日子 -->
+    <div class="postcard-placeholder">
+      <span class="icon">📷</span>
+      <span>5月24日</span>
+      <span style="font-size:10px">等待冲洗...</span>
+    </div>
+
+    <div class="postcard-placeholder">
+      <span class="icon">📷</span>
+      <span>5月25日</span>
+      <span style="font-size:10px">等待冲洗...</span>
+    </div>
+  </div>
+</div>
+
+<!-- 探索图鉴 -->
+<div class="section" id="section-explore">
+  <div class="week-label">已收集 12 张 · 6个系列</div>
+  <div class="explore-grid">
+
+    <div class="explore-card">
+      <div class="explore-image effect-particles" style="background-image: url('https://images.unsplash.com/photo-1520483691742-bada60a1edd6?w=400&h=400&fit=crop')">
+        <span class="explore-number">#012</span>
+      </div>
+      <div class="explore-info">
+        <div class="explore-location">📍 冰岛 · 黑沙滩</div>
+        <div class="explore-series">火与冰之地</div>
+        <div class="explore-trivia">"这里的沙子是火山熔岩冷却后形成的，整片海滩没有一粒普通沙子。"</div>
+      </div>
+    </div>
+
+    <div class="explore-card">
+      <div class="explore-image effect-shimmer" style="background-image: url('https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=400&h=400&fit=crop')">
+        <span class="explore-number">#011</span>
+      </div>
+      <div class="explore-info">
+        <div class="explore-location">📍 马尔代夫 · 沙洲</div>
+        <div class="explore-series">蓝色星球</div>
+        <div class="explore-trivia">"这个国家平均海拔只有1.5米，是世界上最平坦的国家。"</div>
+      </div>
+    </div>
+
+    <div class="explore-card">
+      <div class="explore-image effect-twinkle" style="background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400&h=400&fit=crop')">
+        <span class="explore-number">#010</span>
+      </div>
+      <div class="explore-info">
+        <div class="explore-location">📍 纳米比亚 · 星空</div>
+        <div class="explore-series">星空之下</div>
+        <div class="explore-trivia">"这里的光污染几乎为零，肉眼可以看到银河的每一个细节。"</div>
+      </div>
+    </div>
+
+    <div class="explore-card">
+      <div class="explore-image effect-shimmer" style="background-image: url('https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=400&h=400&fit=crop')">
+        <span class="explore-number">#009</span>
+      </div>
+      <div class="explore-info">
+        <div class="explore-location">📍 挪威 · 峡湾</div>
+        <div class="explore-series">自然奇观</div>
+        <div class="explore-trivia">"挪威峡湾是冰川用了数百万年'雕刻'出来的，最深处超过1300米。"</div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 英雄面板 -->
+<div class="section" id="section-hero">
+  <div class="hero-panel">
+
+    <div class="hero-card">
+      <div class="hero-name">刚子</div>
+      <div class="hero-title">效率骑士 · 连胜5天</div>
+      <div class="hero-stats-grid">
+        <div class="hero-stat">
+          <div class="hero-stat-value">38</div>
+          <div class="hero-stat-label">累计天数</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">78%</div>
+          <div class="hero-stat-label">平均完成率</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">5</div>
+          <div class="hero-stat-label">当前连胜</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">4280</div>
+          <div class="hero-stat-label">累计经验</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">82%</div>
+          <div class="hero-stat-label">SMART通过率</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-value">12</div>
+          <div class="hero-stat-label">最长连胜</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="week-label">成就徽章</div>
+    <div class="achievement-list">
+      <div class="achievement-item unlocked">
+        <div class="achievement-icon">🌅</div>
+        <div class="achievement-info">
+          <div class="achievement-name">晨光先锋</div>
+          <div class="achievement-desc">连续7天6:30准时开始</div>
+        </div>
+        <span style="color:var(--accent-gold);font-size:12px">已解锁</span>
+      </div>
+      <div class="achievement-item unlocked">
+        <div class="achievement-icon">🎯</div>
+        <div class="achievement-info">
+          <div class="achievement-name">精准打击者</div>
+          <div class="achievement-desc">连续3天任务全部SMART一次通过</div>
+        </div>
+        <span style="color:var(--accent-gold);font-size:12px">已解锁</span>
+      </div>
+      <div class="achievement-item unlocked">
+        <div class="achievement-icon">🛡️</div>
+        <div class="achievement-info">
+          <div class="achievement-name">反干扰大师</div>
+          <div class="achievement-desc">一周内被中断后全部回到主线</div>
+        </div>
+        <span style="color:var(--accent-gold);font-size:12px">已解锁</span>
+      </div>
+      <div class="achievement-item locked">
+        <div class="achievement-icon">🏆</div>
+        <div class="achievement-info">
+          <div class="achievement-name">百日行者</div>
+          <div class="achievement-desc">累计使用100天</div>
+        </div>
+        <div class="progress-bar-bg" style="width:80px">
+          <div class="progress-bar-fill" style="width:38%"></div>
+        </div>
+      </div>
+      <div class="achievement-item locked">
+        <div class="achievement-icon">🐉</div>
+        <div class="achievement-info">
+          <div class="achievement-name">BOSS猎人</div>
+          <div class="achievement-desc">连续5天前三要事全部完成</div>
+        </div>
+        <span style="color:var(--text-dim);font-size:12px">2/5天</span>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // 标签切换
+  function switchTab(tabName) {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    
+    event.target.classList.add('active');
+    document.getElementById('section-' + tabName).classList.add('active');
+  }
+
+  // 未来：数据从腾讯文档API或COS JSON文件动态加载
+  // 当前为静态演示版本，实际运行时由 WorkBuddy 每日更新此文件
+</script>
+
+</body>
+</html>
