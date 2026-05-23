@@ -1,0 +1,22 @@
+{
+  "today": {
+    "day": 1,
+    "rate": 25,
+    "status": "🌑 剪影",
+    "top3": "1/3",
+    "tasks": "1/4",
+    "interrupt": 0,
+    "energy": 25
+  },
+  "weekAvg": 25,
+  "weekDelta": 0,
+  "streak": 0,
+  "monthHitRate": 0,
+  "daily30": [
+    {"date": "2026-05-23", "rate": 25}
+  ],
+  "weeks8": [
+    {"date": "2026-05-23", "rate": 25}
+  ],
+  "syncedAt": "2026-05-23T20:00:11+08:00"
+}
