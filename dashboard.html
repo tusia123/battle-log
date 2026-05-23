@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=2.0">
+<title>刚子的战斗日志 · 每日完成率</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700&display=swap');
+
+  :root {
+    --bg-dark: #0a0a1a;
+    --bg-card: #141428;
+    --bg-panel: #1a1a35;
+    --accent-gold: #f0c040;
+    --accent-blue: #4a90d9;
+    --accent-green: #34d399;
+    --accent-red: #ef4444;
+    --accent-cyan: #22d3ee;
+    --accent-orange: #f59e0b;
+    --text-primary: #e8e8f0;
+    --text-secondary: #8888aa;
+    --text-dim: #555570;
+    --border: #2a2a4a;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Noto Sans SC', sans-serif;
+    background: var(--bg-dark);
+    color: var(--text-primary);
+    min-height: 100vh;
+    padding-bottom: 60px;
+  }
+
+  /* ===== 顶部状态栏 ===== */
+  .header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: linear-gradient(180deg, rgba(10,10,26,0.98) 0%, rgba(10,10,26,0.92) 100%);
+    backdrop-filter: blur(10px);
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .header-row h1 {
+    font-size: 16px;
+    color: var(--accent-gold);
+    font-weight: 700;
+  }
+  .header-row .sub {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  /* ===== 导航 ===== */
+  .nav-tabs {
+    display: flex;
+    gap: 4px;
+    padding: 8px 12px 0;
+    background: var(--bg-dark);
+    border-bottom: 1px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab {
+    flex-shrink: 0;
+    padding: 8px 14px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+    text-decoration: none;
+  }
+  .nav-tab.active {
+    color: var(--accent-gold);
+    border-bottom-color: var(--accent-gold);
+  }
+
+  /* ===== KPI 卡片组 ===== */
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 14px;
+  }
+  .kpi-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent-blue);
+  }
+  .kpi-card.gold::before { background: var(--accent-gold); }
+  .kpi-card.green::before { background: var(--accent-green); }
+  .kpi-card.cyan::before { background: var(--accent-cyan); }
+  .kpi-card.orange::before { background: var(--accent-orange); }
+
+  .kpi-label {
+    font-size: 11px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+  }
+  .kpi-value {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.1;
+  }
+  .kpi-value .unit {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-left: 2px;
+  }
+  .kpi-trend {
+    margin-top: 6px;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .kpi-trend.up { color: var(--accent-red); }
+  .kpi-trend.down { color: var(--accent-green); }
+
+  /* ===== 当日核心环 ===== */
+  .today-section {
+    padding: 0 14px 16px;
+  }
+  .section-title {
+    font-size: 13px;
+    color: var(--accent-gold);
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .today-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+  }
+  .ring-wrap {
+    position: relative;
+    width: 110px;
+    height: 110px;
+    flex-shrink: 0;
+  }
+  .ring-wrap svg { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--border); stroke-width: 8; }
+  .ring-fg {
+    fill: none;
+    stroke: var(--accent-gold);
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s ease-out;
+  }
+  .ring-text {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .ring-text .num {
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--accent-gold);
+  }
+  .ring-text .lab {
+    font-size: 10px;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+  }
+  .today-info { flex: 1; }
+  .today-info .day {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+  }
+  .today-info .status {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 8px;
+  }
+  .today-info .breakdown {
+    font-size: 12px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .today-info .breakdown span.val { color: var(--text-primary); }
+
+  /* ===== 30 天柱状图 ===== */
+  .chart-section {
+    padding: 0 14px 16px;
+  }
+  .chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+  }
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .chart-header h3 {
+    font-size: 13px;
+    color: var(--text-primary);
+    font-weight: 500;
+  }
+  .chart-legend {
+    display: flex;
+    gap: 10px;
+    font-size: 10px;
+    color: var(--text-secondary);
+  }
+  .legend-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-right: 3px;
+    vertical-align: middle;
+  }
+
+  .bars-wrap {
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+    height: 140px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .bar {
+    flex: 1;
+    min-width: 5px;
+    background: var(--accent-blue);
+    border-radius: 2px 2px 0 0;
+    position: relative;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .bar.gold { background: var(--accent-gold); }
+  .bar.green { background: var(--accent-green); }
+  .bar.orange { background: var(--accent-orange); }
+  .bar.red { background: var(--accent-red); }
+  .bar.empty { background: var(--border); opacity: 0.4; }
+  .bar:hover, .bar:active {
+    filter: brightness(1.3);
+    box-shadow: 0 0 8px rgba(240,192,64,0.5);
+  }
+  .bar:hover .bar-tooltip {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .bar-tooltip {
+    position: absolute;
+    bottom: calc(100% + 6px);
+    left: 50%;
+    transform: translate(-50%, 4px);
+    background: rgba(0,0,0,0.92);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transition: all 0.2s;
+    z-index: 10;
+  }
+  .x-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 6px;
+    font-size: 9px;
+    color: var(--text-dim);
+  }
+
+  /* ===== 周热力日历 ===== */
+  .calendar-section {
+    padding: 0 14px 16px;
+  }
+  .calendar-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+  }
+  .cal-grid {
+    display: grid;
+    grid-template-columns: 20px repeat(7, 1fr);
+    gap: 4px;
+  }
+  .cal-week-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .cal-day-header {
+    font-size: 10px;
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 4px 0;
+  }
+  .cal-cell {
+    aspect-ratio: 1;
+    border-radius: 4px;
+    background: var(--border);
+    opacity: 0.4;
+    position: relative;
+    cursor: pointer;
+  }
+  .cal-cell.l1 { background: rgba(239,68,68,0.6); opacity: 1; }
+  .cal-cell.l2 { background: rgba(245,158,11,0.6); opacity: 1; }
+  .cal-cell.l3 { background: rgba(34,211,238,0.6); opacity: 1; }
+  .cal-cell.l4 { background: rgba(52,211,153,0.7); opacity: 1; }
+  .cal-cell.l5 { background: rgba(240,192,64,0.85); opacity: 1; }
+  .cal-cell.today {
+    box-shadow: 0 0 0 2px var(--accent-gold);
+  }
+  .cal-cell .num {
+    position: absolute;
+    bottom: 1px;
+    right: 2px;
+    font-size: 8px;
+    color: rgba(255,255,255,0.7);
+  }
+
+  .heat-legend {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+    margin-top: 10px;
+    font-size: 10px;
+    color: var(--text-dim);
+  }
+  .heat-legend .heat-square {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+  }
+
+  /* ===== 推送时间表 ===== */
+  .push-section {
+    padding: 0 14px 16px;
+  }
+  .push-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .push-row {
+    display: flex;
+    align-items: flex-start;
+    padding: 14px;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .push-row:last-child { border-bottom: none; }
+  .push-time {
+    flex-shrink: 0;
+    width: 56px;
+    text-align: right;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    font-family: 'Courier New', monospace;
+    padding-top: 1px;
+  }
+  .push-body { flex: 1; }
+  .push-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .push-title .icon { font-size: 14px; }
+  .push-desc {
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .push-desc .ch {
+    display: inline-block;
+    background: var(--bg-panel);
+    color: var(--accent-gold);
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-size: 10px;
+    margin: 0 2px;
+  }
+
+  /* ===== 通道连接状态 ===== */
+  .channel-section {
+    padding: 0 14px 24px;
+  }
+  .channel-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px;
+  }
+  .channel-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .channel-row:last-child { border-bottom: none; }
+  .channel-name {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+  }
+  .channel-name .icon { font-size: 16px; }
+  .channel-status {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 10px;
+  }
+  .channel-status.on {
+    background: rgba(52,211,153,0.15);
+    color: var(--accent-green);
+    border: 1px solid rgba(52,211,153,0.3);
+  }
+  .channel-status.off {
+    background: rgba(239,68,68,0.12);
+    color: var(--accent-red);
+    border: 1px solid rgba(239,68,68,0.3);
+  }
+  .channel-status.warn {
+    background: rgba(245,158,11,0.12);
+    color: var(--accent-orange);
+    border: 1px solid rgba(245,158,11,0.3);
+  }
+
+  /* ===== 数据源说明 ===== */
+  .source-note {
+    margin: 0 14px 16px;
+    padding: 12px 14px;
+    background: rgba(74,144,217,0.08);
+    border: 1px solid rgba(74,144,217,0.2);
+    border-radius: 10px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.7;
+  }
+  .source-note strong { color: var(--accent-blue); }
+  .source-note a {
+    color: var(--accent-cyan);
+    text-decoration: none;
+    word-break: break-all;
+  }
+</style>
+</head>
+<body>
+
+<!-- 顶部状态栏 -->
+<div class="header">
+  <div class="header-row">
+    <h1>📊 战况仪表盘</h1>
+    <span class="sub" id="header-date">2026.05.23 · 周六</span>
+  </div>
+  <div class="header-row">
+    <span class="sub">数据来源 · 腾讯文档「每日记录」</span>
+    <span class="sub" id="last-sync">同步：刚刚</span>
+  </div>
+</div>
+
+<!-- 导航 -->
+<div class="nav-tabs">
+  <a class="nav-tab" href="./index.html">🗺 世界地图</a>
+  <a class="nav-tab" href="./gallery.html">📸 明信片册</a>
+  <a class="nav-tab active" href="./dashboard.html">📊 仪表盘</a>
+</div>
+
+<!-- KPI 卡片组 -->
+<div class="kpi-grid">
+  <div class="kpi-card gold">
+    <div class="kpi-label">今日完成率</div>
+    <div class="kpi-value"><span id="kpi-today">--</span><span class="unit">%</span></div>
+    <div class="kpi-trend" id="kpi-today-trend">等待数据</div>
+  </div>
+  <div class="kpi-card green">
+    <div class="kpi-label">本周平均</div>
+    <div class="kpi-value"><span id="kpi-week">--</span><span class="unit">%</span></div>
+    <div class="kpi-trend" id="kpi-week-trend">— vs 上周</div>
+  </div>
+  <div class="kpi-card cyan">
+    <div class="kpi-label">连胜天数</div>
+    <div class="kpi-value"><span id="kpi-streak">--</span><span class="unit">天</span></div>
+    <div class="kpi-trend" id="kpi-streak-trend">≥70% 算 1 天</div>
+  </div>
+  <div class="kpi-card orange">
+    <div class="kpi-label">30 天达标率</div>
+    <div class="kpi-value"><span id="kpi-month">--</span><span class="unit">%</span></div>
+    <div class="kpi-trend" id="kpi-month-trend">≥70% 计入</div>
+  </div>
+</div>
+
+<!-- 当日核心环 -->
+<div class="today-section">
+  <div class="section-title">⚔ 今日战况</div>
+  <div class="today-card">
+    <div class="ring-wrap">
+      <svg width="110" height="110" viewBox="0 0 110 110">
+        <circle class="ring-bg" cx="55" cy="55" r="46"></circle>
+        <circle class="ring-fg" id="ring-fg" cx="55" cy="55" r="46"
+                stroke-dasharray="289" stroke-dashoffset="289"></circle>
+      </svg>
+      <div class="ring-text">
+        <div class="num"><span id="ring-num">0</span>%</div>
+        <div class="lab">完成率</div>
+      </div>
+    </div>
+    <div class="today-info">
+      <div class="day" id="info-day">Day -- · 待战报</div>
+      <div class="status" id="info-status">等待今日数据写入腾讯文档</div>
+      <div class="breakdown">
+        前三要事：<span class="val" id="info-top3">—</span><br>
+        总任务：<span class="val" id="info-tasks">—</span><br>
+        中断：<span class="val" id="info-interrupt">—</span><br>
+        能量值：<span class="val" id="info-energy">—</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 30 天柱状图 -->
+<div class="chart-section">
+  <div class="section-title">📈 近 30 天完成率</div>
+  <div class="chart-card">
+    <div class="chart-header">
+      <h3>每日打卡曲线</h3>
+      <div class="chart-legend">
+        <span><span class="legend-dot" style="background:var(--accent-gold)"></span>≥90%</span>
+        <span><span class="legend-dot" style="background:var(--accent-green)"></span>70–89%</span>
+        <span><span class="legend-dot" style="background:var(--accent-orange)"></span>50–69%</span>
+        <span><span class="legend-dot" style="background:var(--accent-red)"></span>&lt;50%</span>
+      </div>
+    </div>
+    <div class="bars-wrap" id="bars-wrap"></div>
+    <div class="x-labels">
+      <span id="x-start">--</span>
+      <span>—</span>
+      <span id="x-end">今天</span>
+    </div>
+  </div>
+</div>
+
+<!-- 周热力日历 -->
+<div class="calendar-section">
+  <div class="section-title">🗓 近 8 周热力</div>
+  <div class="calendar-card">
+    <div class="cal-grid" id="cal-grid"></div>
+    <div class="heat-legend">
+      <span>少</span>
+      <span class="heat-square" style="background:var(--border);opacity:0.4"></span>
+      <span class="heat-square l1"></span>
+      <span class="heat-square l2"></span>
+      <span class="heat-square l3"></span>
+      <span class="heat-square l4"></span>
+      <span class="heat-square l5"></span>
+      <span>多</span>
+    </div>
+  </div>
+</div>
+
+<!-- 推送时间表 -->
+<div class="push-section">
+  <div class="section-title">⏰ 推送时刻表（每日固定）</div>
+  <div class="push-card">
+
+    <div class="push-row">
+      <div class="push-time">07:30</div>
+      <div class="push-body">
+        <div class="push-title"><span class="icon">🌅</span>晨间复盘</div>
+        <div class="push-desc">
+          推送昨日战报回顾 + SMART 计划提问引导。
+          通道：<span class="ch">微信</span><span class="ch">小程序</span>
+          需要你回复昨日感悟和今日要事。
+        </div>
+      </div>
+    </div>
+
+    <div class="push-row">
+      <div class="push-time">08:30</div>
+      <div class="push-body">
+        <div class="push-title"><span class="icon">🎯</span>SMART 校验 & 当日任务确认</div>
+        <div class="push-desc">
+          AI 教练审核你的前三要事是否符合 SMART，给出修正建议。
+          通过后正式开战。
+          通道：<span class="ch">微信</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="push-row">
+      <div class="push-time">每小时整点 09–18:00</div>
+      <div class="push-body">
+        <div class="push-title"><span class="icon">⏱</span>每小时确认</div>
+        <div class="push-desc">
+          轻量推送当前任务卡 + 1 句话状态确认。
+          回复 1=继续 / 2=中断 / 3=切换。
+          通道：<span class="ch">微信</span>（不打扰会议时间窗，13:00 静默）
+        </div>
+      </div>
+    </div>
+
+    <div class="push-row">
+      <div class="push-time">实时</div>
+      <div class="push-body">
+        <div class="push-title"><span class="icon">🌧</span>琐事中断记录</div>
+        <div class="push-desc">
+          你主动发消息「中断 + 内容」即触发，AI 自动登记到中断簿，并预测对今日完成率的影响。
+          通道：<span class="ch">微信</span><span class="ch">小程序</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="push-row">
+      <div class="push-time">20:00</div>
+      <div class="push-body">
+        <div class="push-title"><span class="icon">📜</span>晚间战报</div>
+        <div class="push-desc">
+          汇总当日完成率、前三要事达成、连胜、中断分析，推送到微信。
+          回复寄语后触发明信片显影。
+          通道：<span class="ch">微信</span><span class="ch">小程序</span><span class="ch">仪表盘</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="push-row">
+      <div class="push-time">20:30</div>
+      <div class="push-body">
+        <div class="push-title"><span class="icon">📸</span>明信片显影</div>
+        <div class="push-desc">
+          AI 根据当日感悟生成涌现式主题画面，写入腾讯文档「明信片册」+ 推送到微信 + 同步画廊。
+          通道：<span class="ch">微信</span><span class="ch">画廊</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="push-row">
+      <div class="push-time">周日 21:00</div>
+      <div class="push-body">
+        <div class="push-title"><span class="icon">🗓</span>周回顾</div>
+        <div class="push-desc">
+          7 张明信片拼接长图 + 周完成率趋势 + 下周建议。推送到微信和小程序。
+          通道：<span class="ch">微信</span><span class="ch">小程序</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="push-row">
+      <div class="push-time">月末 21:00</div>
+      <div class="push-body">
+        <div class="push-title"><span class="icon">📚</span>月度画册</div>
+        <div class="push-desc">
+          30 张明信片缩略图册 + 月度完成率分布 + 涌现氛围标签聚类报告。
+          通道：<span class="ch">微信</span><span class="ch">小程序</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- 通道连接状态 -->
+<div class="channel-section">
+  <div class="section-title">🔌 推送通道状态</div>
+  <div class="channel-card">
+
+    <div class="channel-row">
+      <div class="channel-name"><span class="icon">💬</span>微信（个人号）</div>
+      <span class="channel-status warn" id="ch-wechat">待配置</span>
+    </div>
+
+    <div class="channel-row">
+      <div class="channel-name"><span class="icon">🤖</span>WorkBuddy 小程序</div>
+      <span class="channel-status on" id="ch-mp">已连接</span>
+    </div>
+
+    <div class="channel-row">
+      <div class="channel-name"><span class="icon">📄</span>腾讯文档（数据源）</div>
+      <span class="channel-status on" id="ch-docs">已连接</span>
+    </div>
+
+    <div class="channel-row">
+      <div class="channel-name"><span class="icon">🌐</span>GitHub Pages（仪表盘）</div>
+      <span class="channel-status on" id="ch-pages">已部署</span>
+    </div>
+
+    <div class="channel-row">
+      <div class="channel-name"><span class="icon">☁️</span>腾讯云 COS（图片资源）</div>
+      <span class="channel-status on" id="ch-cos">已连接</span>
+    </div>
+
+  </div>
+</div>
+
+<!-- 数据源说明 -->
+<div class="source-note">
+  <strong>数据如何流转：</strong><br>
+  ① 你在微信/小程序回复 → ② Automation 写入腾讯文档「每日记录」Sheet → ③ 每晚 20:30 部署脚本拉取最近 30 天数据生成 <code>data/daily-stats.json</code> → ④ 推到 GitHub Pages → ⑤ 本仪表盘自动加载。<br><br>
+  <strong>实时性：</strong>数据延迟约 1 分钟（Pages CDN 缓存）。如需"立即看最新"，下拉刷新即可。<br><br>
+  <strong>数据源链接：</strong><a href="#" id="docs-link">腾讯文档「刚子的战斗日志」</a>（首次需登录授权）
+</div>
+
+<script>
+  // ==================== 数据加载 ====================
+  // 真实数据由每日 20:30 战报后生成 ./data/daily-stats.json
+  // 当前先用占位数据演示视觉效果
+  const DEMO = {
+    today: {
+      day: '示例 · Day --',
+      rate: 0,
+      status: '等待今日战报数据',
+      top3: '—',
+      tasks: '—',
+      interrupt: '—',
+      energy: '—'
+    },
+    weekAvg: null,
+    weekDelta: null,
+    streak: 0,
+    monthHitRate: null,
+    daily30: [],   // [{date:'2026-05-01', rate:82}, ...]
+    weeks8: []     // 56 days array, oldest first
+  };
+
+  function levelOfRate(r) {
+    if (r === null || r === undefined) return '';
+    if (r >= 90) return 'gold';
+    if (r >= 70) return 'green';
+    if (r >= 50) return 'orange';
+    return 'red';
+  }
+
+  function levelOfHeat(r) {
+    if (r === null || r === undefined) return '';
+    if (r >= 90) return 'l5';
+    if (r >= 75) return 'l4';
+    if (r >= 60) return 'l3';
+    if (r >= 40) return 'l2';
+    if (r > 0)  return 'l1';
+    return '';
+  }
+
+  // 渲染当日核心环
+  function renderToday(data) {
+    const rate = data.today.rate || 0;
+    document.getElementById('ring-num').textContent = rate;
+    const circ = 2 * Math.PI * 46;
+    const offset = circ - (circ * rate / 100);
+    const ring = document.getElementById('ring-fg');
+    ring.style.strokeDashoffset = offset;
+    // 颜色按等级
+    const color = rate >= 90 ? 'var(--accent-gold)'
+                : rate >= 70 ? 'var(--accent-green)'
+                : rate >= 50 ? 'var(--accent-orange)'
+                : 'var(--accent-red)';
+    ring.style.stroke = color;
+
+    document.getElementById('info-day').textContent = data.today.day;
+    document.getElementById('info-status').textContent = data.today.status;
+    document.getElementById('info-top3').textContent = data.today.top3;
+    document.getElementById('info-tasks').textContent = data.today.tasks;
+    document.getElementById('info-interrupt').textContent = data.today.interrupt;
+    document.getElementById('info-energy').textContent = data.today.energy;
+
+    document.getElementById('kpi-today').textContent = rate || '--';
+    document.getElementById('kpi-week').textContent = data.weekAvg ?? '--';
+    document.getElementById('kpi-streak').textContent = data.streak ?? '--';
+    document.getElementById('kpi-month').textContent = data.monthHitRate ?? '--';
+
+    if (data.weekDelta != null) {
+      const arrow = data.weekDelta > 0 ? '↑' : (data.weekDelta < 0 ? '↓' : '—');
+      document.getElementById('kpi-week-trend').textContent = `${arrow} ${Math.abs(data.weekDelta)}% vs 上周`;
+    }
+  }
+
+  // 渲染 30 天柱状图
+  function renderBars(daily30) {
+    const wrap = document.getElementById('bars-wrap');
+    wrap.innerHTML = '';
+    const arr = daily30.length ? daily30 : Array.from({length: 30}, (_,i) => ({ date: '', rate: null }));
+    arr.forEach(d => {
+      const bar = document.createElement('div');
+      bar.className = 'bar ' + (d.rate == null ? 'empty' : levelOfRate(d.rate));
+      const h = d.rate == null ? 6 : Math.max(d.rate, 4);
+      bar.style.height = h + '%';
+      if (d.date) {
+        const tip = document.createElement('div');
+        tip.className = 'bar-tooltip';
+        tip.textContent = `${d.date} · ${d.rate ?? '—'}%`;
+        bar.appendChild(tip);
+      }
+      wrap.appendChild(bar);
+    });
+
+    if (daily30.length) {
+      document.getElementById('x-start').textContent = daily30[0].date.slice(5);
+    }
+  }
+
+  // 渲染 8 周热力日历
+  function renderCalendar(weeks8) {
+    const grid = document.getElementById('cal-grid');
+    grid.innerHTML = '';
+    // 表头
+    grid.appendChild(div('cal-week-label', ''));
+    ['日','一','二','三','四','五','六'].forEach(d => grid.appendChild(div('cal-day-header', d)));
+
+    // 数据：7天x8周=56格，按周分组
+    const data = weeks8.length ? weeks8 : Array.from({length: 56}, () => ({ rate: null }));
+    const today = new Date().toISOString().slice(0,10);
+
+    for (let w = 0; w < 8; w++) {
+      grid.appendChild(div('cal-week-label', 'W' + (8 - w)));
+      for (let d = 0; d < 7; d++) {
+        const idx = w * 7 + d;
+        const item = data[idx] || { rate: null };
+        const cell = document.createElement('div');
+        cell.className = 'cal-cell ' + levelOfHeat(item.rate);
+        if (item.date === today) cell.classList.add('today');
+        if (item.rate != null) {
+          const num = document.createElement('span');
+          num.className = 'num';
+          num.textContent = item.rate;
+          cell.appendChild(num);
+        }
+        if (item.date) cell.title = `${item.date} · ${item.rate ?? '—'}%`;
+        grid.appendChild(cell);
+      }
+    }
+  }
+
+  function div(cls, text) {
+    const d = document.createElement('div');
+    d.className = cls;
+    d.textContent = text;
+    return d;
+  }
+
+  // 加载真实数据（如果存在）
+  async function loadStats() {
+    try {
+      const res = await fetch('./data/daily-stats.json', { cache: 'no-store' });
+      if (res.ok) {
+        const real = await res.json();
+        renderToday(real);
+        renderBars(real.daily30 || []);
+        renderCalendar(real.weeks8 || []);
+        document.getElementById('last-sync').textContent =
+          '同步：' + (real.syncedAt || '刚刚');
+        return;
+      }
+    } catch (err) { /* 文件不存在 = 空状态 */ }
+    // fallback：占位
+    renderToday(DEMO);
+    renderBars(DEMO.daily30);
+    renderCalendar(DEMO.weeks8);
+  }
+
+  // 更新顶部日期
+  (function () {
+    const now = new Date();
+    const w = ['周日','周一','周二','周三','周四','周五','周六'][now.getDay()];
+    const dateStr = now.getFullYear() + '.' +
+      String(now.getMonth()+1).padStart(2,'0') + '.' +
+      String(now.getDate()).padStart(2,'0');
+    document.getElementById('header-date').textContent = `${dateStr} · ${w}`;
+  })();
+
+  loadStats();
+</script>
+
+</body>
+</html>
