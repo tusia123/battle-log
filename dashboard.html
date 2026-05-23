@@ -366,6 +366,166 @@
     border-radius: 2px;
   }
 
+  /* ===== 实时事件流转 ===== */
+  .timeline-section {
+    padding: 0 14px 16px;
+  }
+  .timeline-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 14px;
+  }
+  .timeline-now {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: linear-gradient(90deg, rgba(245,158,11,0.18), rgba(245,158,11,0.04));
+    border-left: 3px solid var(--accent-orange);
+    border-radius: 8px;
+    margin-bottom: 14px;
+  }
+  .timeline-now .now-time {
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    color: var(--accent-orange);
+    font-size: 14px;
+  }
+  .timeline-now .now-label {
+    font-size: 12px;
+    color: var(--text-primary);
+    flex: 1;
+    line-height: 1.4;
+  }
+  .timeline-now .now-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    background: var(--accent-orange);
+    color: white;
+    border-radius: 10px;
+    letter-spacing: 0.5px;
+  }
+  .timeline-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .timeline-item {
+    display: flex;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px dashed rgba(255,255,255,0.06);
+    position: relative;
+  }
+  .timeline-item:last-child { border-bottom: none; }
+  .timeline-item .t-time {
+    flex-shrink: 0;
+    width: 50px;
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    padding-top: 2px;
+  }
+  .timeline-item .t-body {
+    flex: 1;
+    font-size: 12px;
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+  .timeline-item .t-status {
+    flex-shrink: 0;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 9px;
+    align-self: flex-start;
+    margin-top: 3px;
+    letter-spacing: 0.3px;
+  }
+  .t-status.done {
+    background: rgba(52,211,153,0.15);
+    color: var(--accent-green);
+    border: 1px solid rgba(52,211,153,0.3);
+  }
+  .t-status.doing {
+    background: rgba(245,158,11,0.15);
+    color: var(--accent-orange);
+    border: 1px solid rgba(245,158,11,0.3);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+  .t-status.todo {
+    background: rgba(255,255,255,0.04);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+  }
+  .t-status.skip {
+    background: rgba(239,68,68,0.10);
+    color: #d97a7a;
+    border: 1px dashed rgba(239,68,68,0.3);
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+  .timeline-item .t-result {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 3px;
+    font-style: italic;
+  }
+
+  .event-flow {
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--border);
+  }
+  .event-flow-title {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-bottom: 10px;
+  }
+  .flow-stages {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 4px;
+  }
+  .flow-stage {
+    flex: 1;
+    text-align: center;
+    padding: 8px 4px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-size: 10px;
+    color: var(--text-secondary);
+    position: relative;
+  }
+  .flow-stage .stage-num {
+    display: block;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--accent-cyan);
+    margin-bottom: 2px;
+  }
+  .flow-arrow {
+    color: var(--text-dim);
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+  .write-hint {
+    margin-top: 14px;
+    padding: 10px 12px;
+    background: rgba(74,144,217,0.08);
+    border: 1px solid rgba(74,144,217,0.2);
+    border-radius: 8px;
+    font-size: 11px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+  }
+  .write-hint .icon { color: var(--accent-blue); margin-right: 6px; }
+
   /* ===== 推送时间表 ===== */
   .push-section {
     padding: 0 14px 16px;
@@ -558,6 +718,52 @@
   </div>
 </div>
 
+<!-- 实时事件追踪 -->
+<div class="timeline-section">
+  <div class="section-title">📍 当下应做（实时事件追踪）</div>
+  <div class="timeline-card">
+
+    <!-- 当前时段高亮卡 -->
+    <div class="timeline-now" id="now-block">
+      <div class="now-time" id="now-time">--:--</div>
+      <div class="now-label" id="now-label">等待数据写入...</div>
+      <div class="now-badge">NOW</div>
+    </div>
+
+    <!-- 当日时间表（按 09:00–20:00 工作日划分） -->
+    <div class="timeline-list" id="timeline-list">
+      <!-- 由 JS 根据当前时间动态渲染 done/doing/todo 状态 -->
+    </div>
+
+    <!-- 事件流转图（5 阶段） -->
+    <div class="event-flow">
+      <div class="event-flow-title">📐 事件流转：每个任务的生命周期</div>
+      <div class="flow-stages">
+        <div class="flow-stage"><span class="stage-num">1</span>登记</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-stage"><span class="stage-num">2</span>开战</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-stage"><span class="stage-num">3</span>整点</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-stage"><span class="stage-num">4</span>结算</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-stage"><span class="stage-num">5</span>沉淀</div>
+      </div>
+    </div>
+
+    <!-- 写入提示 -->
+    <div class="write-hint">
+      <span class="icon">💡</span><strong>怎么和我互动：</strong>
+      所有时段触发后，你在 <strong>WorkBuddy 小程序</strong>里直接回复就行——
+      回 <code>1/2/3</code> 表示"按计划进行/被打断/切换任务"；
+      发 <code>中断 + 内容</code> 自动登记中断簿；
+      晚 20:00 战报后写一句寄语就触发明信片。
+      所有记录会同步写到腾讯文档「每日记录」表，你随时可以打开看 / 改 / 加备注。
+    </div>
+
+  </div>
+</div>
+
 <!-- 30 天柱状图 -->
 <div class="chart-section">
   <div class="section-title">📈 近 30 天完成率</div>
@@ -600,52 +806,128 @@
 
 <!-- 推送时间表 -->
 <div class="push-section">
-  <div class="section-title">⏰ 推送时刻表（每日固定）</div>
+  <div class="section-title">⏰ 推送时刻表 · 工作时间 09:00–20:00</div>
   <div class="push-card">
 
     <div class="push-row">
-      <div class="push-time">07:30</div>
+      <div class="push-time">09:00</div>
       <div class="push-body">
-        <div class="push-title"><span class="icon">🌅</span>晨间复盘</div>
+        <div class="push-title"><span class="icon">🌅</span>晨间集结 + 复盘昨日</div>
         <div class="push-desc">
-          推送昨日战报回顾 + SMART 计划提问引导。
-          通道：<span class="ch">微信</span><span class="ch">小程序</span>
-          需要你回复昨日感悟和今日要事。
+          推送昨日战报回顾 + SMART 引导提问，开始今日核心任务规划。
+          通道：<span class="ch">小程序</span>
+          需要你回复昨日感悟 + 今日前三要事。
         </div>
       </div>
     </div>
 
     <div class="push-row">
-      <div class="push-time">08:30</div>
+      <div class="push-time">09:30</div>
       <div class="push-body">
-        <div class="push-title"><span class="icon">🎯</span>SMART 校验 & 当日任务确认</div>
+        <div class="push-title"><span class="icon">🎯</span>SMART 校验 & 当日开战</div>
         <div class="push-desc">
-          AI 教练审核你的前三要事是否符合 SMART，给出修正建议。
-          通过后正式开战。
-          通道：<span class="ch">微信</span>
+          AI 教练检查前三要事是否符合 SMART（具体/可衡量/可达成/有截止时间）。
+          通过后正式开战，进入"事件流转"第 2 阶段。
+          通道：<span class="ch">小程序</span>
         </div>
       </div>
     </div>
 
     <div class="push-row">
-      <div class="push-time">每小时整点 09–18:00</div>
+      <div class="push-time">10:00</div>
       <div class="push-body">
-        <div class="push-title"><span class="icon">⏱</span>每小时确认</div>
+        <div class="push-title"><span class="icon">⏱</span>第 1 次整点确认</div>
         <div class="push-desc">
-          轻量推送当前任务卡 + 1 句话状态确认。
-          回复 1=继续 / 2=中断 / 3=切换。
-          通道：<span class="ch">微信</span>（不打扰会议时间窗，13:00 静默）
+          推送当前进行中的任务卡，回复 1=按计划 / 2=被打断 / 3=切换任务。
+          通道：<span class="ch">小程序</span>
         </div>
       </div>
     </div>
 
     <div class="push-row">
-      <div class="push-time">实时</div>
+      <div class="push-time">11:00</div>
       <div class="push-body">
-        <div class="push-title"><span class="icon">🌧</span>琐事中断记录</div>
+        <div class="push-title"><span class="icon">⏱</span>第 2 次整点确认</div>
         <div class="push-desc">
-          你主动发消息「中断 + 内容」即触发，AI 自动登记到中断簿，并预测对今日完成率的影响。
-          通道：<span class="ch">微信</span><span class="ch">小程序</span>
+          上午第二段，进入要事冲刺。
+          通道：<span class="ch">小程序</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="push-row">
+      <div class="push-time">12:00</div>
+      <div class="push-body">
+        <div class="push-title"><span class="icon">🍱</span>午间小结（轻量）</div>
+        <div class="push-desc">
+          上午前三要事进度统计 + 午餐前停一停。13:00–13:30 不打扰（吃饭午休）。
+          通道：<span class="ch">小程序</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="push-row">
+      <div class="push-time">14:00</div>
+      <div class="push-body">
+        <div class="push-title"><span class="icon">☕</span>下午开战</div>
+        <div class="push-desc">
+          下午第一炮，确认未完成的要事 + 调整今日剩余节奏。
+          通道：<span class="ch">小程序</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="push-row">
+      <div class="push-time">15:00</div>
+      <div class="push-body">
+        <div class="push-title"><span class="icon">⏱</span>第 4 次整点确认</div>
+        <div class="push-desc">
+          下午客户/合同/外联高发时段，特别留意中断登记。
+          通道：<span class="ch">小程序</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="push-row">
+      <div class="push-time">16:00</div>
+      <div class="push-body">
+        <div class="push-title"><span class="icon">⏱</span>第 5 次整点确认</div>
+        <div class="push-desc">
+          下午中段，临近收尾，开始抢救未完成的要事。
+          通道：<span class="ch">小程序</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="push-row">
+      <div class="push-time">17:00</div>
+      <div class="push-body">
+        <div class="push-title"><span class="icon">⏱</span>第 6 次整点确认</div>
+        <div class="push-desc">
+          下班前 1 小时收尾节奏，留 30 分钟应付突发。
+          通道：<span class="ch">小程序</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="push-row">
+      <div class="push-time">18:00</div>
+      <div class="push-body">
+        <div class="push-title"><span class="icon">📋</span>白天战况预结算</div>
+        <div class="push-desc">
+          统计 09:00–18:00 完成度，标记未完成项是"今晚加班"还是"挪到明天"。
+          通道：<span class="ch">小程序</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="push-row">
+      <div class="push-time">19:30</div>
+      <div class="push-body">
+        <div class="push-title"><span class="icon">⏰</span>战报准备提醒</div>
+        <div class="push-desc">
+          提示 30 分钟后正式战报，给你时间整理今日感悟和未尽之事。
+          通道：<span class="ch">小程序</span>
         </div>
       </div>
     </div>
@@ -653,11 +935,11 @@
     <div class="push-row">
       <div class="push-time">20:00</div>
       <div class="push-body">
-        <div class="push-title"><span class="icon">📜</span>晚间战报</div>
+        <div class="push-title"><span class="icon">📜</span>晚间战报（核心）</div>
         <div class="push-desc">
-          汇总当日完成率、前三要事达成、连胜、中断分析，推送到微信。
-          回复寄语后触发明信片显影。
-          通道：<span class="ch">微信</span><span class="ch">小程序</span><span class="ch">仪表盘</span>
+          汇总当日完成率、前三要事达成、连胜、中断分析、教练点评。
+          回复一句寄语后触发明信片显影。
+          通道：<span class="ch">小程序</span><span class="ch">仪表盘</span>
         </div>
       </div>
     </div>
@@ -667,8 +949,19 @@
       <div class="push-body">
         <div class="push-title"><span class="icon">📸</span>明信片显影</div>
         <div class="push-desc">
-          AI 根据当日感悟生成涌现式主题画面，写入腾讯文档「明信片册」+ 推送到微信 + 同步画廊。
-          通道：<span class="ch">微信</span><span class="ch">画廊</span>
+          AI 根据当日感悟生成涌现式主题画面，写入腾讯文档「明信片册」+ 同步画廊。
+          通道：<span class="ch">小程序</span><span class="ch">画廊</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="push-row">
+      <div class="push-time">实时</div>
+      <div class="push-body">
+        <div class="push-title"><span class="icon">🌧</span>琐事中断登记</div>
+        <div class="push-desc">
+          你在小程序里发"中断 + 内容"自动登记，AI 预测对今日完成率的影响。
+          通道：<span class="ch">小程序</span>
         </div>
       </div>
     </div>
@@ -678,8 +971,8 @@
       <div class="push-body">
         <div class="push-title"><span class="icon">🗓</span>周回顾</div>
         <div class="push-desc">
-          7 张明信片拼接长图 + 周完成率趋势 + 下周建议。推送到微信和小程序。
-          通道：<span class="ch">微信</span><span class="ch">小程序</span>
+          7 张明信片拼接长图 + 周完成率趋势 + 下周建议。
+          通道：<span class="ch">小程序</span>
         </div>
       </div>
     </div>
@@ -689,8 +982,8 @@
       <div class="push-body">
         <div class="push-title"><span class="icon">📚</span>月度画册</div>
         <div class="push-desc">
-          30 张明信片缩略图册 + 月度完成率分布 + 涌现氛围标签聚类报告。
-          通道：<span class="ch">微信</span><span class="ch">小程序</span>
+          30 张明信片缩略图 + 月度完成率分布 + 涌现氛围标签聚类报告。
+          通道：<span class="ch">小程序</span>
         </div>
       </div>
     </div>
@@ -704,13 +997,13 @@
   <div class="channel-card">
 
     <div class="channel-row">
-      <div class="channel-name"><span class="icon">💬</span>微信（个人号）</div>
-      <span class="channel-status warn" id="ch-wechat">待配置</span>
+      <div class="channel-name"><span class="icon">🤖</span>WorkBuddy 小程序（主推送通道）</div>
+      <span class="channel-status on" id="ch-mp">已连接</span>
     </div>
 
     <div class="channel-row">
-      <div class="channel-name"><span class="icon">🤖</span>WorkBuddy 小程序</div>
-      <span class="channel-status on" id="ch-mp">已连接</span>
+      <div class="channel-name"><span class="icon">💬</span>微信（个人号）</div>
+      <span class="channel-status off" id="ch-wechat">不使用</span>
     </div>
 
     <div class="channel-row">
@@ -904,6 +1197,84 @@
       String(now.getDate()).padStart(2,'0');
     document.getElementById('header-date').textContent = `${dateStr} · ${w}`;
   })();
+
+  // ==================== 实时事件追踪（按 09:00–20:00 工作时间）====================
+  const SCHEDULE = [
+    { time: '09:00', label: '🌅 晨间集结 + 复盘昨日 / SMART 计划提问', minutes: 9*60 },
+    { time: '09:30', label: '🎯 SMART 校验 → 当日开战', minutes: 9*60+30 },
+    { time: '10:00', label: '⏱ 第 1 次整点确认（上午第一段）', minutes: 10*60 },
+    { time: '11:00', label: '⏱ 第 2 次整点确认（要事冲刺）', minutes: 11*60 },
+    { time: '12:00', label: '🍱 午间小结 → 13:30 前不打扰', minutes: 12*60 },
+    { time: '14:00', label: '☕ 下午开战 + 调整剩余节奏', minutes: 14*60 },
+    { time: '15:00', label: '⏱ 第 4 次整点确认（客户/合同高发）', minutes: 15*60 },
+    { time: '16:00', label: '⏱ 第 5 次整点确认（临近收尾）', minutes: 16*60 },
+    { time: '17:00', label: '⏱ 第 6 次整点确认（下班前抢救）', minutes: 17*60 },
+    { time: '18:00', label: '📋 白天战况预结算', minutes: 18*60 },
+    { time: '19:30', label: '⏰ 战报准备提醒', minutes: 19*60+30 },
+    { time: '20:00', label: '📜 晚间战报（核心）→ 等你写寄语', minutes: 20*60 },
+    { time: '20:30', label: '📸 明信片显影（涌现式）', minutes: 20*60+30 }
+  ];
+
+  function renderTimeline() {
+    const now = new Date();
+    const nowMin = now.getHours() * 60 + now.getMinutes();
+    const list = document.getElementById('timeline-list');
+    const nowBlock = document.getElementById('now-block');
+    const nowTime = document.getElementById('now-time');
+    const nowLabel = document.getElementById('now-label');
+
+    // 找当前时段：最后一个 minutes <= nowMin 且未完成的下一个就是 doing
+    let currentIdx = -1;
+    for (let i = 0; i < SCHEDULE.length; i++) {
+      if (SCHEDULE[i].minutes <= nowMin) currentIdx = i;
+    }
+    // doing 定义：当前时段的事 + 还没到下一个时段
+    let doingIdx = -1;
+    if (currentIdx >= 0) {
+      const next = SCHEDULE[currentIdx + 1];
+      // 当前时段后 30 分钟内算 doing；之后变 done
+      if (!next || nowMin < SCHEDULE[currentIdx].minutes + 60) {
+        doingIdx = currentIdx;
+      }
+    }
+
+    // 渲染 NOW 卡
+    if (doingIdx >= 0) {
+      nowBlock.style.display = 'flex';
+      nowTime.textContent = SCHEDULE[doingIdx].time;
+      nowLabel.textContent = SCHEDULE[doingIdx].label;
+    } else if (nowMin < SCHEDULE[0].minutes) {
+      nowBlock.style.display = 'flex';
+      nowTime.textContent = '🌙';
+      nowLabel.textContent = '当前为非工作时间，今日 09:00 开始第一次集结';
+    } else {
+      nowBlock.style.display = 'flex';
+      nowTime.textContent = '🌙';
+      nowLabel.textContent = '今日工作时段已结束，等待明天 09:00 开战';
+    }
+
+    // 渲染列表
+    list.innerHTML = SCHEDULE.map((item, i) => {
+      let status, statusText;
+      if (i === doingIdx) {
+        status = 'doing'; statusText = '进行中';
+      } else if (item.minutes <= nowMin) {
+        status = 'done'; statusText = '已过';
+      } else {
+        status = 'todo'; statusText = '未到';
+      }
+      return `
+        <div class="timeline-item">
+          <div class="t-time">${item.time}</div>
+          <div class="t-body">${item.label}</div>
+          <div class="t-status ${status}">${statusText}</div>
+        </div>
+      `;
+    }).join('');
+  }
+  renderTimeline();
+  // 每分钟刷新一次状态
+  setInterval(renderTimeline, 60 * 1000);
 
   loadStats();
 </script>
