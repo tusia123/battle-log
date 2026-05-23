@@ -282,6 +282,267 @@
 
   .postcard-placeholder .icon { font-size: 24px; opacity: 0.3; }
 
+  /* 剪影版（未抵达）：极强模糊+灰阶+暗化，仅留构图轮廓 */
+  .postcard-image.silhouette {
+    filter: blur(8px) grayscale(100%) brightness(0.4);
+  }
+  .postcard-image.silhouette::after {
+    content: '未抵达';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.5);
+    font-size: 14px;
+    letter-spacing: 4px;
+    backdrop-filter: blur(0.5px);
+    pointer-events: none;
+  }
+
+  /* 氛围标签（卡面右上角） */
+  .postcard-mood {
+    position: absolute;
+    top: 18px;
+    right: 18px;
+    background: rgba(248,244,236,0.92);
+    color: #5a4e3a;
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 10px;
+    letter-spacing: 1px;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+    z-index: 2;
+  }
+
+  /* 空状态 */
+  .empty-hero {
+    text-align: center;
+    padding: 60px 20px 40px;
+    color: var(--text-secondary);
+  }
+  .empty-hero .big-icon {
+    font-size: 56px;
+    opacity: 0.35;
+    margin-bottom: 12px;
+  }
+  .empty-hero h2 {
+    font-size: 18px;
+    color: var(--text-primary);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .empty-hero p {
+    font-size: 13px;
+    line-height: 1.7;
+    max-width: 320px;
+    margin: 0 auto;
+  }
+  .empty-hero .tip {
+    margin-top: 18px;
+    font-size: 12px;
+    color: var(--text-dim);
+    padding: 10px 14px;
+    background: rgba(255,255,255,0.03);
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    display: inline-block;
+  }
+
+  /* ========== Lightbox（点击放大 + 翻转 + 缩放） ========== */
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.92);
+    backdrop-filter: blur(8px);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    touch-action: none;
+  }
+  .lightbox.active {
+    display: flex;
+    animation: fadeIn 0.25s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  .lightbox-stage {
+    position: relative;
+    width: min(90vw, 480px);
+    height: min(85vh, 720px);
+    perspective: 1500px;
+  }
+
+  .lightbox-card {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    transform-style: preserve-3d;
+    will-change: transform;
+  }
+  .lightbox-card.flipped {
+    transform: rotateY(180deg);
+  }
+
+  .lightbox-front, .lightbox-back {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    border-radius: 14px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    overflow: hidden;
+  }
+
+  .lightbox-front {
+    background: #f8f4ec;
+    padding: 28px 28px 36px 28px;
+    display: flex;
+    flex-direction: column;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(0,0,0,0.02) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(0,0,0,0.02) 0%, transparent 50%);
+  }
+  .lightbox-image {
+    flex: 1;
+    background-size: cover;
+    background-position: center;
+    background-color: #d8d2c4;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15), inset 0 0 0 1px rgba(0,0,0,0.08);
+    position: relative;
+    overflow: hidden;
+  }
+  .lightbox-image.golden::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 30%, rgba(240,192,64,0.3) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .lightbox-image.blur-low { filter: blur(2px) grayscale(30%); }
+  .lightbox-image.silhouette {
+    filter: blur(12px) grayscale(100%) brightness(0.4);
+  }
+  .lightbox-image.silhouette::before {
+    content: '未抵达';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255,255,255,0.55);
+    font-size: 22px;
+    letter-spacing: 8px;
+    z-index: 2;
+    filter: blur(0);
+  }
+
+  .lightbox-caption {
+    padding: 18px 4px 0 4px;
+  }
+  .lightbox-date {
+    font-size: 12px;
+    color: #8a7e6a;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+  .lightbox-quote {
+    font-family: 'Ma Shan Zheng', cursive;
+    font-size: 22px;
+    color: #2c2620;
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+  .lightbox-stats {
+    font-size: 11px;
+    color: #aa9d85;
+    display: flex;
+    gap: 12px;
+    letter-spacing: 0.5px;
+  }
+  .lightbox-mood {
+    position: absolute;
+    top: 22px;
+    right: 22px;
+    background: rgba(255,255,255,0.95);
+    color: #5a4e3a;
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    letter-spacing: 1.5px;
+    z-index: 3;
+  }
+
+  .lightbox-back {
+    background: linear-gradient(135deg, #1a1a3e, #252550);
+    transform: rotateY(180deg);
+    padding: 28px 24px;
+    color: var(--text-primary);
+    overflow-y: auto;
+  }
+  .lightbox-back .back-title {
+    font-size: 14px;
+    color: var(--accent-gold);
+    margin-bottom: 14px;
+  }
+  .lightbox-back .back-row {
+    padding: 6px 0;
+    font-size: 13px;
+  }
+  .lightbox-back .back-coach {
+    margin-top: 14px;
+    font-size: 12px;
+    line-height: 1.6;
+  }
+
+  /* lightbox 控制按钮 */
+  .lightbox-toolbar {
+    position: absolute;
+    bottom: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 1001;
+  }
+  .lb-btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .lb-btn:active { background: rgba(255,255,255,0.18); }
+
+  .lb-close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
+    z-index: 1001;
+  }
+
   /* ===== 探索图鉴 ===== */
   .explore-grid {
     display: grid;
@@ -601,7 +862,7 @@
     </div>
     <div class="stat-badge">
       <span class="icon">📸</span>
-      <span class="value" id="total-postcards">38</span>
+      <span class="value" id="total-postcards">0</span>
       <span>张</span>
     </div>
     <div class="stat-badge">
@@ -621,156 +882,116 @@
 
 <!-- 明信片画廊 -->
 <div class="section active" id="section-gallery">
-  <div class="week-label">本周 · 5月19日 - 5月25日</div>
-  <div class="postcard-grid">
 
-    <!-- 示例：高完成度明信片 -->
-    <div class="postcard-wrapper" onclick="this.classList.toggle('flipped')">
+  <!-- 空状态：还没有任何明信片 -->
+  <div class="empty-hero">
+    <div class="big-icon">📷</div>
+    <h2>明信片册等待第一张显影</h2>
+    <p>每天晚间战报后，AI 会根据你今天的核心任务、寄语和状态，
+       即兴生成一张独一无二的明信片。完成度越高，画面越清晰。</p>
+    <div class="tip">
+      🌑 完成率 &lt; 50% → 剪影未抵达<br>
+      🌫 50–69% → 朦胧版<br>
+      🌤 70–89% → 自然显影<br>
+      ✨ ≥ 90% → 显影完成（带金光）
+    </div>
+  </div>
+
+  <div class="week-label">📚 显影示例（实际明信片由每日战报生成）</div>
+  <div class="postcard-grid" id="postcard-grid">
+
+    <!-- 示例1：✨ 显影完成（仅作设计示意） -->
+    <div class="postcard-wrapper" data-card="demo-1">
       <div class="postcard-inner">
         <div class="postcard-front">
-          <div class="postcard-image golden" style="background-image: url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=400&h=500&fit=crop')"></div>
+          <span class="postcard-mood">晨光</span>
+          <div class="postcard-image golden" style="background-image: linear-gradient(135deg,#f4c98a,#e89d5a 60%,#9a4a3e);"></div>
           <div class="postcard-caption">
-            <div class="postcard-date">2026.05.19 #Day034</div>
-            <div class="postcard-quote">终于把那个拖了三天的方案搞定了</div>
-            <div class="postcard-stats">
-              <span>⚡92%</span>
-              <span>🎯3/3</span>
-              <span>🔥1</span>
-            </div>
+            <div class="postcard-date">示例 · 显影完成</div>
+            <div class="postcard-quote">完成率 ≥ 90% 时这样</div>
           </div>
-        </div>
-        <div class="postcard-back">
-          <div class="back-title">📋 战况详情</div>
-          <div class="back-row"><span class="back-label">完成率</span><span class="back-value good">92%</span></div>
-          <div class="back-row"><span class="back-label">前三要事</span><span class="back-value good">3/3 全清</span></div>
-          <div class="back-row"><span class="back-label">总任务</span><span class="back-value">8/9</span></div>
-          <div class="back-row"><span class="back-label">能量值</span><span class="back-value">225</span></div>
-          <div class="back-row"><span class="back-label">被动中断</span><span class="back-value">1次/30min</span></div>
-          <div class="back-coach">💡 教练说：上午效率极高，4项任务全部按时完成。下午只被中断1次，抗干扰能力在提升！</div>
         </div>
       </div>
     </div>
 
-    <!-- 示例：中等完成度 -->
-    <div class="postcard-wrapper" onclick="this.classList.toggle('flipped')">
+    <!-- 示例2：🌤 自然显影 -->
+    <div class="postcard-wrapper" data-card="demo-2">
       <div class="postcard-inner">
         <div class="postcard-front">
-          <div class="postcard-image" style="background-image: url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=400&h=500&fit=crop')"></div>
+          <span class="postcard-mood">松弛</span>
+          <div class="postcard-image" style="background-image: linear-gradient(160deg,#a8c5d6,#6b8ea6 50%,#3d5468);"></div>
           <div class="postcard-caption">
-            <div class="postcard-date">2026.05.20 #Day035</div>
-            <div class="postcard-quote">今天节奏有点乱，明天调整</div>
-            <div class="postcard-stats">
-              <span>⚡75%</span>
-              <span>🎯2/3</span>
-              <span>🔥2</span>
-            </div>
+            <div class="postcard-date">示例 · 自然显影</div>
+            <div class="postcard-quote">完成率 70–89% 时这样</div>
           </div>
-        </div>
-        <div class="postcard-back">
-          <div class="back-title">📋 战况详情</div>
-          <div class="back-row"><span class="back-label">完成率</span><span class="back-value warn">75%</span></div>
-          <div class="back-row"><span class="back-label">前三要事</span><span class="back-value warn">2/3</span></div>
-          <div class="back-row"><span class="back-label">总任务</span><span class="back-value">6/8</span></div>
-          <div class="back-row"><span class="back-label">能量值</span><span class="back-value">160</span></div>
-          <div class="back-row"><span class="back-label">被动中断</span><span class="back-value warn">3次/1.5h</span></div>
-          <div class="back-coach">💡 下午14-16点连续被打断3次，建议明天这个时段安排可中断型任务。</div>
         </div>
       </div>
     </div>
 
-    <!-- 示例：低完成度（模糊） -->
-    <div class="postcard-wrapper" onclick="this.classList.toggle('flipped')">
+    <!-- 示例3：🌫 朦胧版 -->
+    <div class="postcard-wrapper" data-card="demo-3">
       <div class="postcard-inner">
         <div class="postcard-front">
-          <div class="postcard-image blur-low" style="background-image: url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=400&h=500&fit=crop')"></div>
+          <span class="postcard-mood">浮尘</span>
+          <div class="postcard-image blur-low" style="background-image: linear-gradient(180deg,#9a9080,#6e6555 60%,#3d3a32);"></div>
           <div class="postcard-caption">
-            <div class="postcard-date">2026.05.21 #Day036</div>
-            <div class="postcard-quote">今天太累了，休息也是进步</div>
-            <div class="postcard-stats">
-              <span>⚡55%</span>
-              <span>🎯1/3</span>
-              <span>🔥0</span>
-            </div>
+            <div class="postcard-date">示例 · 朦胧版</div>
+            <div class="postcard-quote">完成率 50–69% 时这样</div>
           </div>
-        </div>
-        <div class="postcard-back">
-          <div class="back-title">📋 战况详情</div>
-          <div class="back-row"><span class="back-label">完成率</span><span class="back-value bad">55%</span></div>
-          <div class="back-row"><span class="back-label">前三要事</span><span class="back-value bad">1/3</span></div>
-          <div class="back-row"><span class="back-label">总任务</span><span class="back-value">4/7</span></div>
-          <div class="back-row"><span class="back-label">能量值</span><span class="back-value">85</span></div>
-          <div class="back-row"><span class="back-label">被动中断</span><span class="back-value bad">5次/3h</span></div>
-          <div class="back-coach">💡 今天被大量临时事务冲击，但你坚持记录了每一次中断。这份诚实本身就值得肯定。明天轻装上阵！</div>
         </div>
       </div>
     </div>
 
-    <!-- 示例：又一个高完成度 -->
-    <div class="postcard-wrapper" onclick="this.classList.toggle('flipped')">
+    <!-- 示例4：🌑 剪影版（未抵达） -->
+    <div class="postcard-wrapper" data-card="demo-4">
       <div class="postcard-inner">
         <div class="postcard-front">
-          <div class="postcard-image golden" style="background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=400&h=500&fit=crop')"></div>
+          <div class="postcard-image silhouette" style="background-image: linear-gradient(160deg,#5a5a6a,#3d3d4a 60%,#22222c);"></div>
           <div class="postcard-caption">
-            <div class="postcard-date">2026.05.22 #Day037</div>
-            <div class="postcard-quote">触底反弹！今天证明了自己</div>
-            <div class="postcard-stats">
-              <span>⚡88%</span>
-              <span>🎯3/3</span>
-              <span>🔥1</span>
-            </div>
+            <div class="postcard-date">示例 · 未抵达</div>
+            <div class="postcard-quote">完成率 &lt; 50% 时这样</div>
           </div>
-        </div>
-        <div class="postcard-back">
-          <div class="back-title">📋 战况详情</div>
-          <div class="back-row"><span class="back-label">完成率</span><span class="back-value good">88%</span></div>
-          <div class="back-row"><span class="back-label">前三要事</span><span class="back-value good">3/3 全清</span></div>
-          <div class="back-row"><span class="back-label">总任务</span><span class="back-value">7/8</span></div>
-          <div class="back-row"><span class="back-label">能量值</span><span class="back-value">205</span></div>
-          <div class="back-row"><span class="back-label">被动中断</span><span class="back-value">1次/20min</span></div>
-          <div class="back-coach">💡 效率回血！从昨天55%飙到88%，刚子你证明了自己的恢复力。BOSS全清，漂亮！</div>
         </div>
       </div>
     </div>
 
-    <!-- 今天（进行中） -->
-    <div class="postcard-wrapper" onclick="this.classList.toggle('flipped')">
-      <div class="postcard-inner">
-        <div class="postcard-front">
-          <div class="postcard-image" style="background-image: url('https://images.unsplash.com/photo-1519681393784-d120267933ba?w=400&h=500&fit=crop')"></div>
-          <div class="postcard-caption">
-            <div class="postcard-date">2026.05.23 #Day038</div>
-            <div class="postcard-quote">又是充实的一天</div>
-            <div class="postcard-stats">
-              <span>⚡82%</span>
-              <span>🎯3/3</span>
-              <span>🔥2</span>
-            </div>
-          </div>
-        </div>
-        <div class="postcard-back">
-          <div class="back-title">📋 战况详情</div>
-          <div class="back-row"><span class="back-label">完成率</span><span class="back-value good">82%</span></div>
-          <div class="back-row"><span class="back-label">前三要事</span><span class="back-value good">3/3 全清</span></div>
-          <div class="back-row"><span class="back-label">总任务</span><span class="back-value">7/9</span></div>
-          <div class="back-row"><span class="back-label">能量值</span><span class="back-value">195</span></div>
-          <div class="back-row"><span class="back-label">被动中断</span><span class="back-value">2次/50min</span></div>
-          <div class="back-coach">💡 连续两天BOSS全清，稳定输出！SMART一次通过率80%，思维越来越清晰了。</div>
+  </div>
+
+  <!-- 真实明信片渲染锚点（每日战报后 AI 在此插入新卡片） -->
+  <div id="real-postcards"></div>
+
+</div>
+
+<!-- Lightbox：点击卡片放大 + 缩放 + 翻转 -->
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lb-close">×</button>
+  <div class="lightbox-stage">
+    <div class="lightbox-card" id="lb-card">
+      <div class="lightbox-front">
+        <span class="lightbox-mood" id="lb-mood">氛围</span>
+        <div class="lightbox-image" id="lb-image"></div>
+        <div class="lightbox-caption">
+          <div class="lightbox-date" id="lb-date">2026.05.23</div>
+          <div class="lightbox-quote" id="lb-quote">寄语</div>
+          <div class="lightbox-stats" id="lb-stats">⚡—  🎯—  🔥—</div>
         </div>
       </div>
+      <div class="lightbox-back">
+        <div class="back-title">📋 战况详情</div>
+        <div class="back-row"><span class="back-label">完成率</span> <span id="lb-rate">—</span></div>
+        <div class="back-row"><span class="back-label">前三要事</span> <span id="lb-top3">—</span></div>
+        <div class="back-row"><span class="back-label">总任务</span> <span id="lb-tasks">—</span></div>
+        <div class="back-row"><span class="back-label">能量值</span> <span id="lb-energy">—</span></div>
+        <div class="back-row"><span class="back-label">被动中断</span> <span id="lb-interrupt">—</span></div>
+        <div class="back-coach" id="lb-coach">教练点评将显示在这里。</div>
+      </div>
     </div>
-
-    <!-- 未到的日子 -->
-    <div class="postcard-placeholder">
-      <span class="icon">📷</span>
-      <span>5月24日</span>
-      <span style="font-size:10px">等待冲洗...</span>
-    </div>
-
-    <div class="postcard-placeholder">
-      <span class="icon">📷</span>
-      <span>5月25日</span>
-      <span style="font-size:10px">等待冲洗...</span>
-    </div>
+  </div>
+  <div class="lightbox-toolbar">
+    <button class="lb-btn" id="lb-flip">🔄 翻转</button>
+    <button class="lb-btn" id="lb-zoom-out">－</button>
+    <button class="lb-btn" id="lb-zoom-in">＋</button>
+    <button class="lb-btn" id="lb-reset">↺ 重置</button>
   </div>
 </div>
 
@@ -911,17 +1132,243 @@
 </div>
 
 <script>
-  // 标签切换
+  // ==================== 标签切换 ====================
   function switchTab(tabName) {
     document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-    
     event.target.classList.add('active');
     document.getElementById('section-' + tabName).classList.add('active');
   }
 
-  // 未来：数据从腾讯文档API或COS JSON文件动态加载
-  // 当前为静态演示版本，实际运行时由 WorkBuddy 每日更新此文件
+  // ==================== 示例明信片数据（仅用于设计示意） ====================
+  // 真实运行时由战报后 AI 写入腾讯文档「明信片册」并由部署脚本同步生成此处数据
+  const DEMO_CARDS = {
+    'demo-1': {
+      mood: '晨光',
+      date: '示例 · 显影完成',
+      quote: '完成率 ≥ 90% 时这样',
+      stats: '⚡92%  🎯3/3  🔥连胜5',
+      bg: 'linear-gradient(135deg,#f4c98a,#e89d5a 60%,#9a4a3e)',
+      effect: 'golden',
+      rate: '92%', top3: '3/3 全清', tasks: '8/9', energy: '225',
+      interrupt: '1次 / 30min',
+      coach: '💡 这是显影完成的范例：色彩饱满、金色暖光、画面清晰。真实卡片由 AI 根据当日记录即兴生成主题。'
+    },
+    'demo-2': {
+      mood: '松弛',
+      date: '示例 · 自然显影',
+      quote: '完成率 70–89% 时这样',
+      stats: '⚡78%  🎯2/3  🔥连胜2',
+      bg: 'linear-gradient(160deg,#a8c5d6,#6b8ea6 50%,#3d5468)',
+      effect: '',
+      rate: '78%', top3: '2/3', tasks: '6/8', energy: '160',
+      interrupt: '2次 / 50min',
+      coach: '💡 这是自然显影的范例：自然光胶片质感，画面完整温暖。'
+    },
+    'demo-3': {
+      mood: '浮尘',
+      date: '示例 · 朦胧版',
+      quote: '完成率 50–69% 时这样',
+      stats: '⚡58%  🎯1/3  🔥连胜0',
+      bg: 'linear-gradient(180deg,#9a9080,#6e6555 60%,#3d3a32)',
+      effect: 'blur-low',
+      rate: '58%', top3: '1/3', tasks: '4/7', energy: '95',
+      interrupt: '4次 / 2h',
+      coach: '💡 这是朦胧版的范例：画面隐约可辨，提醒今天节奏需要调整。'
+    },
+    'demo-4': {
+      mood: '',
+      date: '示例 · 未抵达',
+      quote: '完成率 < 50% 时这样',
+      stats: '⚡35%  🎯0/3  🔥连胜0',
+      bg: 'linear-gradient(160deg,#5a5a6a,#3d3d4a 60%,#22222c)',
+      effect: 'silhouette',
+      rate: '35%', top3: '0/3', tasks: '2/6', energy: '40',
+      interrupt: '6次 / 3.5h',
+      coach: '💡 这是未抵达的范例：画面以剪影呈现，记录"今天没怎么打卡"也是一种诚实。明天轻装上阵。'
+    }
+  };
+
+  // ==================== Lightbox 控制 ====================
+  const lb = document.getElementById('lightbox');
+  const lbCard = document.getElementById('lb-card');
+  const lbImage = document.getElementById('lb-image');
+  const lbMood = document.getElementById('lb-mood');
+  const lbDate = document.getElementById('lb-date');
+  const lbQuote = document.getElementById('lb-quote');
+  const lbStats = document.getElementById('lb-stats');
+  const lbRate = document.getElementById('lb-rate');
+  const lbTop3 = document.getElementById('lb-top3');
+  const lbTasks = document.getElementById('lb-tasks');
+  const lbEnergy = document.getElementById('lb-energy');
+  const lbInterrupt = document.getElementById('lb-interrupt');
+  const lbCoach = document.getElementById('lb-coach');
+
+  let currentScale = 1;
+  let currentTx = 0, currentTy = 0;
+  let isFlipped = false;
+
+  function applyTransform() {
+    const flip = isFlipped ? 'rotateY(180deg)' : '';
+    lbCard.style.transform = `translate(${currentTx}px, ${currentTy}px) scale(${currentScale}) ${flip}`;
+  }
+
+  function openLightbox(cardId) {
+    const data = DEMO_CARDS[cardId];
+    if (!data) return;
+
+    // 重置
+    currentScale = 1;
+    currentTx = 0;
+    currentTy = 0;
+    isFlipped = false;
+    lbCard.classList.remove('flipped');
+    applyTransform();
+
+    // 填充数据
+    lbImage.style.backgroundImage = data.bg.startsWith('linear') || data.bg.startsWith('url')
+      ? data.bg
+      : `url('${data.bg}')`;
+    lbImage.className = 'lightbox-image' + (data.effect ? ' ' + data.effect : '');
+    lbMood.textContent = data.mood || '';
+    lbMood.style.display = data.mood ? 'block' : 'none';
+    lbDate.textContent = data.date;
+    lbQuote.textContent = data.quote;
+    lbStats.textContent = data.stats;
+    lbRate.textContent = data.rate;
+    lbTop3.textContent = data.top3;
+    lbTasks.textContent = data.tasks;
+    lbEnergy.textContent = data.energy;
+    lbInterrupt.textContent = data.interrupt;
+    lbCoach.textContent = data.coach;
+
+    lb.classList.add('active');
+  }
+
+  function closeLightbox() {
+    lb.classList.remove('active');
+  }
+
+  // 卡片点击 → 打开 lightbox
+  document.querySelectorAll('.postcard-wrapper').forEach(card => {
+    card.addEventListener('click', () => {
+      const cardId = card.getAttribute('data-card');
+      if (cardId) openLightbox(cardId);
+    });
+  });
+
+  // 关闭按钮
+  document.getElementById('lb-close').addEventListener('click', closeLightbox);
+
+  // 点击 lightbox 空白处关闭（不点到卡上）
+  lb.addEventListener('click', (e) => {
+    if (e.target === lb) closeLightbox();
+  });
+
+  // Esc 关闭
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && lb.classList.contains('active')) closeLightbox();
+  });
+
+  // 翻转
+  document.getElementById('lb-flip').addEventListener('click', () => {
+    isFlipped = !isFlipped;
+    lbCard.classList.toggle('flipped');
+    applyTransform();
+  });
+  // 双击卡面也翻转
+  lbCard.addEventListener('dblclick', (e) => {
+    e.stopPropagation();
+    isFlipped = !isFlipped;
+    lbCard.classList.toggle('flipped');
+    applyTransform();
+  });
+
+  // 缩放按钮
+  document.getElementById('lb-zoom-in').addEventListener('click', () => {
+    currentScale = Math.min(currentScale + 0.2, 3);
+    applyTransform();
+  });
+  document.getElementById('lb-zoom-out').addEventListener('click', () => {
+    currentScale = Math.max(currentScale - 0.2, 0.5);
+    applyTransform();
+  });
+  document.getElementById('lb-reset').addEventListener('click', () => {
+    currentScale = 1;
+    currentTx = 0;
+    currentTy = 0;
+    applyTransform();
+  });
+
+  // 滚轮缩放（桌面端）
+  lb.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    const delta = e.deltaY < 0 ? 0.1 : -0.1;
+    currentScale = Math.min(Math.max(currentScale + delta, 0.5), 3);
+    applyTransform();
+  }, { passive: false });
+
+  // 双指捏合 + 拖动（移动端）
+  let touches = [];
+  let pinchStartDist = 0;
+  let pinchStartScale = 1;
+  let dragStartX = 0, dragStartY = 0;
+  let dragStartTx = 0, dragStartTy = 0;
+
+  function getTouchDist(t) {
+    const dx = t[0].clientX - t[1].clientX;
+    const dy = t[0].clientY - t[1].clientY;
+    return Math.hypot(dx, dy);
+  }
+
+  lb.addEventListener('touchstart', (e) => {
+    touches = e.touches;
+    if (touches.length === 2) {
+      pinchStartDist = getTouchDist(touches);
+      pinchStartScale = currentScale;
+    } else if (touches.length === 1 && currentScale > 1) {
+      dragStartX = touches[0].clientX;
+      dragStartY = touches[0].clientY;
+      dragStartTx = currentTx;
+      dragStartTy = currentTy;
+    }
+  }, { passive: true });
+
+  lb.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const dist = getTouchDist(e.touches);
+      const ratio = dist / pinchStartDist;
+      currentScale = Math.min(Math.max(pinchStartScale * ratio, 0.5), 3);
+      applyTransform();
+    } else if (e.touches.length === 1 && currentScale > 1) {
+      e.preventDefault();
+      currentTx = dragStartTx + (e.touches[0].clientX - dragStartX);
+      currentTy = dragStartTy + (e.touches[0].clientY - dragStartY);
+      applyTransform();
+    }
+  }, { passive: false });
+
+  // ==================== 真实数据加载（待对接） ====================
+  // 部署到 GitHub Pages 后，每日战报会更新一份 data/postcards.json
+  // 此处加载并渲染到 #real-postcards
+  async function loadRealPostcards() {
+    try {
+      const res = await fetch('./data/postcards.json', { cache: 'no-store' });
+      if (!res.ok) return;
+      const data = await res.json();
+      // TODO: 渲染到 #real-postcards，并更新顶部 #total-postcards 计数
+      if (data && data.length) {
+        document.getElementById('total-postcards').textContent = data.length;
+        // 示例渲染逻辑（待完整对接）：
+        // const target = document.getElementById('real-postcards');
+        // data.forEach(card => target.appendChild(buildCardElement(card)));
+      }
+    } catch (err) {
+      // 数据文件还不存在 = 还没生成第一张明信片，保持空状态即可
+    }
+  }
+  loadRealPostcards();
 </script>
 
 </body>
