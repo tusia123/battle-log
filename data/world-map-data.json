@@ -3,23 +3,23 @@
     "version": "1.0",
     "total_spots": 260,
     "total_weeks": 52,
-    "start_date": null,
-    "last_updated": null
+    "start_date": "2026-05-23",
+    "last_updated": "2026-05-24"
   },
   "stats": {
-    "total_unlocked": 0,
+    "total_unlocked": 1,
     "routes_completed": 0,
     "continents": {
       "asia": { "total": 65, "unlocked": 0 },
-      "europe": { "total": 55, "unlocked": 0 },
+      "europe": { "total": 55, "unlocked": 1 },
       "africa": { "total": 40, "unlocked": 0 },
       "north_america": { "total": 30, "unlocked": 0 },
       "south_america": { "total": 25, "unlocked": 0 },
       "oceania": { "total": 15, "unlocked": 0 },
       "antarctica": { "total": 10, "unlocked": 0 }
     },
-    "current_streak": 0,
-    "longest_streak": 0
+    "current_streak": 1,
+    "longest_streak": 1
   },
   "routes": [
     {
@@ -67,10 +67,10 @@
           "lat": 67.86,
           "lng": 20.22,
           "quality_pool": "rare",
-          "unlocked": false,
-          "unlock_date": null,
-          "completion_rate": null,
-          "image_url": null
+          "unlocked": true,
+          "unlock_date": "2026-05-24",
+          "completion_rate": 87.5,
+          "image_url": "https://images.unsplash.com/photo-1520769945061-0a448c463865?w=600&h=400&fit=crop"
         },
         {
           "day": 4,

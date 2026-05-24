@@ -1190,6 +1190,63 @@
     }
   };
 
+  // ==================== 真实明信片数据 ====================
+  const REAL_CARDS = {};
+
+  function buildCardElement(card, index) {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'postcard-wrapper';
+    wrapper.setAttribute('data-card', 'real-' + index);
+
+    let effectClass = '';
+    if (card.tier === 'golden') effectClass = 'golden';
+    else if (card.tier === 'blur-low') effectClass = 'blur-low';
+    else if (card.tier === 'silhouette') effectClass = 'silhouette';
+
+    const moodTag = card.mood ? `<span class="postcard-mood">${card.mood}</span>` : '';
+    const tierShort = card.tierLabel.replace(/[🌑🌫🌤✨]\s*/, '');
+
+    wrapper.innerHTML = `
+      <div class="postcard-inner">
+        <div class="postcard-front">
+          ${moodTag}
+          <div class="postcard-image ${effectClass}" style="background-image: ${card.image.startsWith('linear') || card.image.startsWith('url') ? card.image : `url('${card.image}')`}"></div>
+          <div class="postcard-caption">
+            <div class="postcard-date">${card.date} · ${tierShort}</div>
+            <div class="postcard-quote">${card.caption}</div>
+            <div class="postcard-stats">⚡${card.rate}%  🎯${card.top3}  🔥连胜${card.streak}</div>
+          </div>
+        </div>
+        <div class="postcard-back">
+          <div class="back-title">📋 战况详情</div>
+          <div class="back-row"><span class="back-label">完成率</span> <span class="back-value ${card.rate >= 80 ? 'good' : card.rate >= 50 ? 'warn' : 'bad'}">${card.rate}%</span></div>
+          <div class="back-row"><span class="back-label">前三要事</span> <span class="back-value">${card.top3}</span></div>
+          <div class="back-row"><span class="back-label">总任务</span> <span class="back-value">${card.top3}</span></div>
+          <div class="back-row"><span class="back-label">能量值</span> <span class="back-value good">+${Math.round(card.rate * 0.9 + card.streak * 5)}</span></div>
+          <div class="back-row"><span class="back-label">主题</span> <span class="back-value">${card.mood || '—'}</span></div>
+          <div class="back-coach">${card.theme}</div>
+        </div>
+      </div>
+    `;
+
+    REAL_CARDS['real-' + index] = {
+      mood: card.mood || '',
+      date: card.date + ' · ' + card.tierLabel,
+      quote: card.caption,
+      stats: `⚡${card.rate}%  🎯${card.top3}  🔥连胜${card.streak}`,
+      bg: card.image,
+      effect: effectClass,
+      rate: card.rate + '%',
+      top3: card.top3,
+      tasks: card.top3,
+      energy: Math.round(card.rate * 0.9 + card.streak * 5) + '',
+      interrupt: '—',
+      coach: card.theme
+    };
+
+    return wrapper;
+  }
+
   // ==================== Lightbox 控制 ====================
   const lb = document.getElementById('lightbox');
   const lbCard = document.getElementById('lb-card');
@@ -1215,7 +1272,7 @@
   }
 
   function openLightbox(cardId) {
-    const data = DEMO_CARDS[cardId];
+    const data = DEMO_CARDS[cardId] || REAL_CARDS[cardId];
     if (!data) return;
 
     // 重置
@@ -1350,23 +1407,47 @@
     }
   }, { passive: false });
 
-  // ==================== 真实数据加载（待对接） ====================
-  // 部署到 GitHub Pages 后，每日战报会更新一份 data/postcards.json
-  // 此处加载并渲染到 #real-postcards
+  // ==================== 真实数据加载 ====================
   async function loadRealPostcards() {
     try {
       const res = await fetch('./data/postcards.json', { cache: 'no-store' });
       if (!res.ok) return;
       const data = await res.json();
-      // TODO: 渲染到 #real-postcards，并更新顶部 #total-postcards 计数
-      if (data && data.length) {
-        document.getElementById('total-postcards').textContent = data.length;
-        // 示例渲染逻辑（待完整对接）：
-        // const target = document.getElementById('real-postcards');
-        // data.forEach(card => target.appendChild(buildCardElement(card)));
-      }
+      if (!data || !data.length) return;
+
+      // 更新顶部统计
+      document.getElementById('total-postcards').textContent = data.length;
+      const latest = data[data.length - 1];
+      document.getElementById('streak-days').textContent = latest.streak;
+
+      // 计算本周平均完成率（最近7天）
+      const recent = data.slice(-7);
+      const avg = recent.reduce((s, c) => s + c.rate, 0) / recent.length;
+      document.getElementById('week-avg').textContent = Math.round(avg) + '%';
+
+      // 清空示例卡片，渲染真实卡片
+      const grid = document.getElementById('postcard-grid');
+      grid.innerHTML = '';
+
+      // 隐藏空状态
+      const emptyHero = document.querySelector('.empty-hero');
+      if (emptyHero) emptyHero.style.display = 'none';
+
+      // 倒序渲染（最新在前）
+      data.slice().reverse().forEach((card, idx) => {
+        grid.appendChild(buildCardElement(card, data.length - 1 - idx));
+      });
+
+      // 重新绑定点击事件
+      document.querySelectorAll('.postcard-wrapper').forEach(card => {
+        card.addEventListener('click', () => {
+          const cardId = card.getAttribute('data-card');
+          if (cardId) openLightbox(cardId);
+        });
+      });
+
     } catch (err) {
-      // 数据文件还不存在 = 还没生成第一张明信片，保持空状态即可
+      // 数据文件不存在时保持示例状态
     }
   }
   loadRealPostcards();
