@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 400">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#e8b87a"/>
+      <stop offset="35%" stop-color="#d4945c"/>
+      <stop offset="65%" stop-color="#b8784a"/>
+      <stop offset="100%" stop-color="#8a5a3a"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- 天空背景 -->
+  <rect width="600" height="400" fill="url(#sky)"/>
+
+  <!-- 太阳 -->
+  <circle cx="480" cy="100" r="55" fill="#f5d0a0" opacity="0.85"/>
+  <circle cx="480" cy="100" r="75" fill="#f5d0a0" opacity="0.15"/>
+
+  <!-- 远景云层 -->
+  <ellipse cx="120" cy="340" rx="140" ry="50" fill="#e8d5c4" opacity="0.35"/>
+  <ellipse cx="350" cy="360" rx="180" ry="55" fill="#e8d5c4" opacity="0.3"/>
+  <ellipse cx="550" cy="330" rx="120" ry="40" fill="#e8d5c4" opacity="0.4"/>
+
+  <!-- 飞机尾迹（虚线轨迹） -->
+  <path d="M80,160 Q180,200 280,170 Q380,140 460,180" fill="none" stroke="#f5d0a0" stroke-width="2.5" stroke-dasharray="12,10" opacity="0.5"/>
+
+  <!-- 飞机主体 -->
+  <g transform="translate(460, 100) rotate(8)">
+    <!-- 机身 -->
+    <ellipse cx="0" cy="0" rx="75" ry="18" fill="#3d3020"/>
+    <!-- 主机翼 -->
+    <path d="M-15,5 L-35,55 L45,55 L25,5 Z" fill="#4a3a28"/>
+    <!-- 尾翼 -->
+    <path d="M-55,-5 L-72,-38 L-45,-38 L-35,-5 Z" fill="#4a3a28"/>
+    <!-- 驾驶舱窗 -->
+    <ellipse cx="45" cy="-3" rx="12" ry="6" fill="#7a9ab0" opacity="0.6"/>
+  </g>
+
+  <!-- 航线上的任务节点 -->
+
+  <!-- 节点1：茅台瓶（茅台文旅） -->
+  <g transform="translate(140, 190)">
+    <circle r="22" fill="#f7f4ee" opacity="0.85"/>
+    <rect x="-7" y="-14" width="14" height="22" rx="3" fill="#c4a050" opacity="0.9"/>
+    <rect x="-5" y="-18" width="10" height="4" rx="1" fill="#c4a050" opacity="0.9"/>
+    <text x="0" y="30" text-anchor="middle" font-size="8" fill="#f7f4ee" font-family="Arial" font-weight="bold">茅台</text>
+  </g>
+
+  <!-- 节点2：文档（接待文档） -->
+  <g transform="translate(240, 150)">
+    <circle r="20" fill="#f7f4ee" opacity="0.85"/>
+    <rect x="-10" y="-14" width="20" height="28" rx="2" fill="#7a6858" opacity="0.7"/>
+    <line x1="-6" y1="-6" x2="6" y2="-6" stroke="#f7f4ee" stroke-width="1.5"/>
+    <line x1="-6" y1="0" x2="6" y2="0" stroke="#f7f4ee" stroke-width="1.5"/>
+    <line x1="-6" y1="6" x2="3" y2="6" stroke="#f7f4ee" stroke-width="1.5"/>
+    <text x="0" y="28" text-anchor="middle" font-size="8" fill="#f7f4ee" font-family="Arial" font-weight="bold">文档</text>
+  </g>
+
+  <!-- 节点3：PPT（论文） -->
+  <g transform="translate(340, 175)">
+    <circle r="20" fill="#f7f4ee" opacity="0.85"/>
+    <rect x="-11" y="-9" width="22" height="18" rx="2" fill="#b8784a" opacity="0.8"/>
+    <rect x="-7" y="-5" width="14" height="4" fill="#f7f4ee" opacity="0.6"/>
+    <rect x="-7" y="1" width="10" height="2.5" fill="#f7f4ee" opacity="0.4"/>
+    <text x="0" y="28" text-anchor="middle" font-size="8" fill="#f7f4ee" font-family="Arial" font-weight="bold">论文</text>
+  </g>
+
+  <!-- 节点4：书本（看书） -->
+  <g transform="translate(420, 210)">
+    <circle r="18" fill="#f7f4ee" opacity="0.7"/>
+    <path d="M-9,-8 L-9,8 Q0,12 9,8 L9,-8 Q0,-4 -9,-8" fill="#8a7a6a" opacity="0.6"/>
+    <path d="M-9,-8 Q0,-4 9,-8" fill="none" stroke="#f7f4ee" stroke-width="1"/>
+    <text x="0" y="26" text-anchor="middle" font-size="8" fill="#f7f4ee" font-family="Arial" font-weight="bold">阅读</text>
+  </g>
+
+  <!-- 近景云层 -->
+  <path d="M0,380 Q80,350 160,380 Q240,410 320,375 Q400,345 480,380 Q560,415 600,385 L600,400 L0,400 Z" fill="#d4c4b0" opacity="0.5"/>
+  <path d="M0,390 Q100,365 200,395 Q300,420 400,385 Q500,360 600,395 L600,400 L0,400 Z" fill="#c4b4a0" opacity="0.35"/>
+
+  <!-- 氛围粒子/星光 -->
+  <circle cx="80" cy="80" r="1.5" fill="#f5d0a0" opacity="0.6"/>
+  <circle cx="200" cy="50" r="1" fill="#f5d0a0" opacity="0.4"/>
+  <circle cx="560" cy="200" r="1.5" fill="#f5d0a0" opacity="0.5"/>
+  <circle cx="520" cy="280" r="1" fill="#f5d0a0" opacity="0.3"/>
+  <circle cx="150" cy="280" r="1" fill="#f5d0a0" opacity="0.4"/>
+</svg>
