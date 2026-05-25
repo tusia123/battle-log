@@ -3,23 +3,44 @@
     "version": "1.0",
     "total_spots": 260,
     "total_weeks": 52,
-    "start_date": "2026-05-23",
+    "start_date": null,
     "last_updated": "2026-05-24"
   },
   "stats": {
-    "total_unlocked": 1,
+    "total_unlocked": 2,
     "routes_completed": 0,
     "continents": {
-      "asia": { "total": 65, "unlocked": 0 },
-      "europe": { "total": 55, "unlocked": 1 },
-      "africa": { "total": 40, "unlocked": 0 },
-      "north_america": { "total": 30, "unlocked": 0 },
-      "south_america": { "total": 25, "unlocked": 0 },
-      "oceania": { "total": 15, "unlocked": 0 },
-      "antarctica": { "total": 10, "unlocked": 0 }
+      "asia": {
+        "total": 65,
+        "unlocked": 2
+      },
+      "europe": {
+        "total": 55,
+        "unlocked": 0
+      },
+      "africa": {
+        "total": 40,
+        "unlocked": 0
+      },
+      "north_america": {
+        "total": 30,
+        "unlocked": 0
+      },
+      "south_america": {
+        "total": 25,
+        "unlocked": 0
+      },
+      "oceania": {
+        "total": 15,
+        "unlocked": 0
+      },
+      "antarctica": {
+        "total": 10,
+        "unlocked": 0
+      }
     },
-    "current_streak": 1,
-    "longest_streak": 1
+    "current_streak": 0,
+    "longest_streak": 0
   },
   "routes": [
     {
@@ -67,10 +88,10 @@
           "lat": 67.86,
           "lng": 20.22,
           "quality_pool": "rare",
-          "unlocked": true,
-          "unlock_date": "2026-05-24",
-          "completion_rate": 87.5,
-          "image_url": "https://images.unsplash.com/photo-1520769945061-0a448c463865?w=600&h=400&fit=crop"
+          "unlocked": false,
+          "unlock_date": null,
+          "completion_rate": null,
+          "image_url": null
         },
         {
           "day": 4,
@@ -159,7 +180,7 @@
           "country": "冰岛",
           "continent": "europe",
           "lat": 63.42,
-          "lng": -19.00,
+          "lng": -19.0,
           "quality_pool": "rare",
           "unlocked": false,
           "unlock_date": null,
@@ -173,7 +194,7 @@
           "country": "格陵兰",
           "continent": "north_america",
           "lat": 69.22,
-          "lng": -51.10,
+          "lng": -51.1,
           "quality_pool": "legendary",
           "unlocked": false,
           "unlock_date": null,
@@ -196,7 +217,7 @@
           "full_name": "俄罗斯·贝加尔湖冰面气泡",
           "country": "俄罗斯",
           "continent": "asia",
-          "lat": 53.50,
+          "lat": 53.5,
           "lng": 107.75,
           "quality_pool": "legendary",
           "unlocked": false,
@@ -224,7 +245,7 @@
           "full_name": "蒙古·库苏古尔湖冬季",
           "country": "蒙古",
           "continent": "asia",
-          "lat": 51.10,
+          "lat": 51.1,
           "lng": 100.45,
           "quality_pool": "common",
           "unlocked": false,
@@ -252,7 +273,7 @@
           "full_name": "中国·雾凇岛",
           "country": "中国",
           "continent": "asia",
-          "lat": 43.90,
+          "lat": 43.9,
           "lng": 126.65,
           "quality_pool": "rare",
           "unlocked": false,
@@ -277,7 +298,7 @@
           "country": "美国",
           "continent": "north_america",
           "lat": 63.33,
-          "lng": -150.50,
+          "lng": -150.5,
           "quality_pool": "legendary",
           "unlocked": false,
           "unlock_date": null,
@@ -335,6 +356,86 @@
           "lat": 62.45,
           "lng": -114.37,
           "quality_pool": "rare",
+          "unlocked": false,
+          "unlock_date": null,
+          "completion_rate": null,
+          "image_url": null
+        }
+      ]
+    },
+    {
+      "week": "W20",
+      "month": 5,
+      "name": "南亚古迹",
+      "theme": "丝路与高原",
+      "season_reason": "5月中亚草原最绿，高原初夏，是最舒适的探访季",
+      "completed": false,
+      "stops": [
+        {
+          "day": 1,
+          "name": "泰姬陵晨雾",
+          "full_name": "印度·泰姬陵晨雾",
+          "country": "印度",
+          "continent": "asia",
+          "lat": 27.17,
+          "lng": 78.04,
+          "quality_pool": "legendary",
+          "unlocked": true,
+          "unlock_date": "2026-05-25",
+          "completion_rate": 0.43,
+          "image_url": null
+        },
+        {
+          "day": 2,
+          "name": "瓦拉纳西恒河日出",
+          "full_name": "印度·瓦拉纳西恒河日出",
+          "country": "印度",
+          "continent": "asia",
+          "lat": 25.32,
+          "lng": 83.0,
+          "quality_pool": "legendary",
+          "unlocked": true,
+          "unlock_date": "2026-05-24",
+          "completion_rate": 0.5,
+          "image_url": "https://daily-quest-rpg-leo2026-1360024105.cos.ap-guangzhou.myqcloud.com/explore-cards/2026-05-24.png"
+        },
+        {
+          "day": 3,
+          "name": "斋浦尔风之宫殿",
+          "full_name": "印度·斋浦尔风之宫殿",
+          "country": "印度",
+          "continent": "asia",
+          "lat": 26.92,
+          "lng": 75.83,
+          "quality_pool": "rare",
+          "unlocked": false,
+          "unlock_date": null,
+          "completion_rate": null,
+          "image_url": null
+        },
+        {
+          "day": 4,
+          "name": "锡吉里耶狮子岩",
+          "full_name": "斯里兰卡·锡吉里耶狮子岩",
+          "country": "斯里兰卡",
+          "continent": "asia",
+          "lat": 7.96,
+          "lng": 80.76,
+          "quality_pool": "rare",
+          "unlocked": false,
+          "unlock_date": null,
+          "completion_rate": null,
+          "image_url": null
+        },
+        {
+          "day": 5,
+          "name": "加勒古城",
+          "full_name": "斯里兰卡·加勒古城",
+          "country": "斯里兰卡",
+          "continent": "asia",
+          "lat": 6.03,
+          "lng": 80.22,
+          "quality_pool": "common",
           "unlocked": false,
           "unlock_date": null,
           "completion_rate": null,
