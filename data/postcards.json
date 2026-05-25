@@ -30,15 +30,15 @@
   {
     "date": "2026-05-25",
     "day": 3,
-    "image": "./postcards/2026-05-25.png",
-    "caption": "前三全清，大局未定",
+    "image": "https://daily-quest-rpg-leo2026-1360024105.cos.ap-guangzhou.myqcloud.com/postcards/2026-05-25.png",
+    "caption": "加油冲冲冲，做一个有全局思考能力的人！",
     "author": "刚子",
-    "rate": 43,
-    "top3": "3/3",
+    "rate": 69,
+    "top3": "1/3",
     "streak": 0,
-    "tier": "silhouette",
-    "tierLabel": "🌑 剪影版（未抵达）",
-    "mood": "凿基",
-    "theme": "水墨游记·山水远眺：三座山峰在浓雾中仅露剪影，山脊金光微透如破晓前兆"
+    "tier": "hazy",
+    "tierLabel": "🌫 朦胧版（铜卡）",
+    "mood": "远眺",
+    "theme": "水墨山水远眺——层峦叠嶂隐于薄雾，孤松矗立山崖，扁舟缓缓而行，朦胧中自有远方"
   }
 ]

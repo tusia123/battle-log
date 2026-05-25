@@ -1,36 +1,26 @@
 {
   "today": {
     "day": 3,
-    "rate": 43,
-    "status": "🌑 剪影版",
-    "top3": "3/3",
-    "tasks": "3/7",
-    "interrupt": 0,
-    "energy": 80
+    "rate": 69,
+    "status": "🌫 朦胧",
+    "top3": "1/3",
+    "tasks": "5/7",
+    "interrupt": 1,
+    "energy": 55
   },
-  "weekAvg": 34.0,
-  "weekDelta": 0,
+  "weekAvg": 60.5,
+  "weekDelta": 44.5,
   "streak": 0,
   "monthHitRate": 0,
   "daily30": [
-    {
-      "date": "2026-05-23",
-      "rate": 25
-    },
-    {
-      "date": "2026-05-25",
-      "rate": 43
-    }
+    {"date": "2026-05-23", "rate": 25},
+    {"date": "2026-05-24", "rate": 87.5},
+    {"date": "2026-05-25", "rate": 69}
   ],
   "weeks8": [
-    {
-      "date": "2026-05-23",
-      "rate": 25
-    },
-    {
-      "date": "2026-05-25",
-      "rate": 43
-    }
+    {"date": "2026-05-23", "rate": 25},
+    {"date": "2026-05-24", "rate": 87.5},
+    {"date": "2026-05-25", "rate": 69}
   ],
-  "syncedAt": "2026-05-25T20:00:12+08:00"
+  "syncedAt": "2026-05-25T21:45:00+08:00"
 }
